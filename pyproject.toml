@@ -1,0 +1,70 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "nearid"
+version = "0.1.0"
+description = "NearID: Identity Representation Learning via Near-identity Distractors"
+authors = [
+    {name = "Aleksandar Cvejic"},
+    {name = "Rameen Abdal"},
+    {name = "Abdelrahman Eldesokey"},
+    {name = "Bernard Ghanem"},
+    {name = "Peter Wonka"},
+]
+requires-python = ">=3.10"
+license = "Apache-2.0"
+readme = "README.md"
+keywords = ["identity-embedding", "metric-learning", "contrastive-learning", "image-similarity"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+dependencies = [
+    "torch>=2.0",
+    "transformers>=4.45.0",
+    "pillow",
+    "safetensors",
+]
+
+[project.optional-dependencies]
+train = [
+    "accelerate",
+    "simple-parsing",
+    "datasets",
+    "wandb",
+    "tqdm",
+    "numpy",
+]
+eval = [
+    "pandas",
+    "scipy",
+    "fire",
+    "tqdm",
+    "numpy",
+    "datasets",
+]
+all = ["nearid[train,eval]"]
+
+[project.urls]
+Homepage = "https://gorluxor.github.io/NearID"
+Repository = "https://github.com/Gorluxor/NearID"
+"Model (HuggingFace)" = "https://huggingface.co/Aleksandar/nearid-siglip2"
+
+[tool.setuptools.packages.find]
+include = ["nearid*"]
+
+[tool.pyright]
+reportPrivateImportUsage = "none"
+include = ["nearid", "training", "evaluation"]
+exclude = ["**/__pycache__", "runs", "outputs", "wandb", "data"]
+
+[tool.ruff.lint]
+ignore = ["F541"]

@@ -1,0 +1,23 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite the paper."
+title: "NearID: Identity Representation Learning via Near-identity Distractors"
+type: software
+license: Apache-2.0
+authors:
+  - family-names: Cvejic
+    given-names: Aleksandar
+    affiliation: "King Abdullah University of Science and Technology (KAUST)"
+  - family-names: Abdal
+    given-names: Rameen
+    affiliation: "Snap Inc."
+  - family-names: Eldesokey
+    given-names: Abdelrahman
+    affiliation: "King Abdullah University of Science and Technology (KAUST)"
+  - family-names: Ghanem
+    given-names: Bernard
+    affiliation: "King Abdullah University of Science and Technology (KAUST)"
+  - family-names: Wonka
+    given-names: Peter
+    affiliation: "King Abdullah University of Science and Technology (KAUST)"
+repository-code: "https://github.com/Gorluxor/NearID"
+url: "https://gorluxor.github.io/NearID"

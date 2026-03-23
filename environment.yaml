@@ -1,0 +1,34 @@
+name: nearid
+channels:
+  - conda-forge
+dependencies:
+  - python=3.10
+  - pip
+
+  # Common runtime deps
+  - numpy
+  - pandas
+  - pillow
+  - tqdm
+  - scipy
+  - matplotlib
+  - fire
+
+  - pip:
+      # PyTorch (CUDA 12.6) — adjust index URL for your CUDA version
+      - --extra-index-url https://download.pytorch.org/whl/cu126
+      - torch==2.8.0
+      - torchvision==0.23.0
+
+      # HuggingFace stack
+      - transformers>=4.45.0
+      - datasets>=4.0.0
+      - accelerate
+      - safetensors
+
+      # Training
+      - simple-parsing
+      - wandb
+
+      # Logging & utilities
+      - tqdm
