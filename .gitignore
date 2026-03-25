@@ -18,7 +18,7 @@ build/
 runs/
 outputs/
 wandb/
-data/
+/data/
 logs/
 
 # Environment
