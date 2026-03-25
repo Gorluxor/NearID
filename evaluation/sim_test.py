@@ -298,7 +298,7 @@ def _wandb_init_if_enabled(args, extra_config: Dict[str, Any]):
         print(f"[wandb] Could not import wandb ({type(e).__name__}: {e}). Continuing without W&B.")
         return None
 
-    entity, project = _parse_wandb_entity_project(getattr(args, "wandb_project", "aleks-generative/EncodeID"))
+    entity, project = _parse_wandb_entity_project(getattr(args, "wandb_project", "NearID"))
     tags = [t.strip() for t in (getattr(args, "wandb_tags", "") or "").split(",") if t.strip()]
 
     ds_neg_folder = extra_config.get("ds_neg_folder", "")
@@ -1868,8 +1868,8 @@ if __name__ == "__main__":
     parser.add_argument(
         "--wandb_project",
         type=str,
-        default=os.environ.get("WANDB_PROJECT", "aleks-generative/EncodeID"),
-        help="Single string 'entity/project' (default: aleks-generative/EncodeID)",
+        default=os.environ.get("WANDB_PROJECT", "NearID"),
+        help="Single string 'entity/project' (default: NearID)",
     )
     parser.add_argument("--wandb_group", type=str, default=None)
     parser.add_argument("--wandb_tags", type=str, default="", help="Comma-separated tags")
