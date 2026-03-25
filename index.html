@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NearID — Identity Representation Learning via Near-Identity Distractors</title>
+<style>
+/* ── Reset & Base ─────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-size: 16px;
+  line-height: 1.65;
+  color: #1a1a2e;
+  background: #f7f8fc;
+  zoom: 1.35;
+}
+
+/* ── Navigation ───────────────────────────────────────────── */
+nav {
+  position: sticky; top: 0; z-index: 100;
+  background: #0d1b2a;
+  padding: 0 2rem;
+  display: flex; align-items: center; gap: 0;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  overflow-x: auto;
+}
+nav .brand {
+  font-weight: 700; font-size: 1rem; color: #e8f4fd;
+  white-space: nowrap; margin-right: 1.5rem; padding: 0.85rem 0;
+}
+nav a {
+  color: #a8c8e8; text-decoration: none; font-size: 0.84rem;
+  padding: 0.85rem 0.75rem; white-space: nowrap;
+  border-bottom: 3px solid transparent;
+  transition: color 0.2s, border-color 0.2s;
+}
+nav a:hover { color: #fff; border-bottom-color: #4da6ff; }
+
+/* ── Hero ─────────────────────────────────────────────────── */
+.hero {
+  background: linear-gradient(135deg, #0d1b2a 0%, #1a3050 60%, #16213e 100%);
+  color: #e8f4fd; padding: 3rem 2rem 2.5rem; text-align: center;
+}
+.hero h1 {
+  font-size: clamp(1.5rem, 3.5vw, 2.5rem);
+  font-weight: 800; letter-spacing: -0.5px; margin-bottom: 0.4rem;
+}
+.hero .venue { font-size: 1rem; color: #7ab8e8; font-weight: 600; margin-bottom: 1.2rem; }
+.anon-badge {
+  display: inline-block; margin-bottom: 1.6rem;
+  background: rgba(77,166,255,0.15);
+  border: 1px solid rgba(77,166,255,0.4);
+  color: #4da6ff; padding: 0.3rem 1rem; border-radius: 999px;
+  font-size: 0.82rem; letter-spacing: 0.04em;
+}
+
+/* ── TL;DR ────────────────────────────────────────────────── */
+.tldr {
+  display: flex; flex-wrap: wrap; justify-content: center; gap: 0.6rem 0.8rem;
+  max-width: 900px; margin: 0 auto;
+}
+.tldr-pill {
+  display: inline-flex; align-items: center; gap: 0.4rem;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 999px; padding: 0.35rem 0.9rem;
+  font-size: 0.8rem; color: #c8dff4; white-space: nowrap;
+}
+.tldr-pill .val {
+  font-weight: 700; color: #6ee7b7; font-size: 0.85rem;
+}
+.tldr-pill .val.blue { color: #93c5fd; }
+
+/* ── Section ──────────────────────────────────────────────── */
+section { padding: 1.5rem 0; }
+section:nth-child(even) { background: #fff; }
+.container { max-width: 1400px; margin: 0 auto; padding: 0 2rem; }
+
+/* ── Bubble (replaces section-title + section-desc) ───────── */
+.bubble-wrap { text-align: center; margin-bottom: 1rem; }
+.bubble {
+  display: inline-flex; align-items: center; gap: 0.55rem;
+  background: #0d1b2a; color: #e8f4fd;
+  padding: 0.5rem 1.2rem; border-radius: 999px;
+  font-size: 1.05rem; font-weight: 700;
+  letter-spacing: 0.01em;
+}
+.bubble .icon { font-size: 1.05rem; opacity: 0.7; }
+.bubble .takeaway {
+  color: #93c5fd; font-weight: 400;
+  background: rgba(77,166,255,0.12); padding: 0.2rem 0.65rem;
+  border-radius: 999px; border: 1px solid rgba(77,166,255,0.25);
+  font-size: 0.85rem;
+}
+
+/* ── Figure cards ─────────────────────────────────────────── */
+.fig-card {
+  background: #fff; border: 1px solid #e0e6f0;
+  border-radius: 10px; overflow: hidden;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+}
+.fig-card img { display: block; width: 100%; height: auto; }
+.fig-caption {
+  padding: 0.85rem 1.1rem; font-size: 0.87rem; color: #444;
+  line-height: 1.55; border-top: 1px solid #e8edf4; background: #f9fafd;
+}
+.fig-caption strong { color: #0d1b2a; }
+
+/* ── Timelapse ────────────────────────────────────────────── */
+.timelapse-wrap {
+  display: grid; grid-template-columns: 1fr 1.9fr; gap: 2rem; align-items: start;
+}
+@media (max-width: 760px) { .timelapse-wrap { grid-template-columns: 1fr; } }
+.timelapse-desc h3 { font-size: 1.1rem; font-weight: 700; color: #0d1b2a; margin-bottom: 0.5rem; }
+.timelapse-desc p { font-size: 0.92rem; color: #444; margin-bottom: 0.8rem; line-height: 1.65; }
+.steps-list { list-style: none; display: flex; flex-direction: column; gap: 0.3rem; font-size: 0.88rem; color: #555; }
+.steps-list li::before { content: "\2192 "; color: #4da6ff; font-weight: 700; }
+.gif-border {
+  border-radius: 10px; overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+  border: 1px solid #dde4f0;
+}
+.gif-border img { display: block; width: 100%; height: auto; }
+
+/* ── Tab gallery (pure CSS) ───────────────────────────────── */
+.gallery { margin-top: 0.5rem; }
+.gallery > input[type="radio"] { display: none; }
+.tab-bar { margin-bottom: 1rem; display: flex; flex-wrap: wrap; gap: 0.35rem; }
+.tab-bar label {
+  padding: 0.4rem 1rem; border: 2px solid #c8d4e8; border-radius: 6px;
+  cursor: pointer; font-size: 0.87rem; color: #4a5568; background: #fff;
+  transition: all 0.15s;
+}
+
+/* NearID gallery — 6 tabs */
+#ntab1:checked ~ .tab-bar label[for="ntab1"],
+#ntab2:checked ~ .tab-bar label[for="ntab2"],
+#ntab3:checked ~ .tab-bar label[for="ntab3"],
+#ntab4:checked ~ .tab-bar label[for="ntab4"],
+#ntab5:checked ~ .tab-bar label[for="ntab5"],
+#ntab6:checked ~ .tab-bar label[for="ntab6"] { background: #0d1b2a; color: #fff; border-color: #0d1b2a; }
+#ntab1:checked ~ .tab-panels > .np1,
+#ntab2:checked ~ .tab-panels > .np2,
+#ntab3:checked ~ .tab-panels > .np3,
+#ntab4:checked ~ .tab-panels > .np4,
+#ntab5:checked ~ .tab-panels > .np5,
+#ntab6:checked ~ .tab-panels > .np6 { display: block; }
+.tab-panels > div { display: none; }
+
+/* MTG gallery — 3 tabs */
+#mtab1:checked ~ .tab-bar label[for="mtab1"],
+#mtab2:checked ~ .tab-bar label[for="mtab2"],
+#mtab3:checked ~ .tab-bar label[for="mtab3"] { background: #0d1b2a; color: #fff; border-color: #0d1b2a; }
+#mtab1:checked ~ .tab-panels-m > .mp1,
+#mtab2:checked ~ .tab-panels-m > .mp2,
+#mtab3:checked ~ .tab-panels-m > .mp3 { display: block; }
+.tab-panels-m > div { display: none; }
+
+/* ── Two-col layout ───────────────────────────────────────── */
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1.8rem; align-items: start; }
+@media (max-width: 680px) { .two-col { grid-template-columns: 1fr; } }
+
+/* ── Contrastive section ──────────────────────────────────── */
+.contrast-grid { display: grid; grid-template-columns: 1.55fr 1fr; gap: 2rem; align-items: center; }
+@media (max-width: 760px) { .contrast-grid { grid-template-columns: 1fr; } }
+.contrast-text h3 { font-size: 0.95rem; font-weight: 700; color: #0d1b2a; margin: 0.9rem 0 0.25rem; }
+.contrast-text h3:first-child { margin-top: 0; }
+.contrast-text p { font-size: 0.9rem; color: #444; line-height: 1.6; }
+.ours-box {
+  background: linear-gradient(135deg, #e8f4fd, #f0f7ff);
+  border-left: 4px solid #4da6ff;
+  padding: 0.65rem 0.9rem; border-radius: 0 8px 8px 0; margin-top: 0.25rem;
+}
+.ours-box p { color: #1a3050; font-size: 0.9rem; }
+
+/* ── Footer ───────────────────────────────────────────────── */
+footer {
+  background: #0d1b2a; color: #7ab8e8;
+  text-align: center; padding: 1.6rem 2rem; font-size: 0.85rem;
+}
+</style>
+</head>
+<body>
+
+<!-- Navigation -->
+<nav>
+  <span class="brand">NearID</span>
+  <a href="#teaser">Teaser</a>
+  <a href="#method">Method</a>
+  <a href="#main-results">Results</a>
+  <a href="#contrastive">Paradigm</a>
+  <a href="#timelapse">KPCA</a>
+  <a href="#nearid-qual">NearID Qual.</a>
+  <a href="#mtg-qual">MTG Qual.</a>
+  <a href="#attention">Attention</a>
+  <a href="#dreambench">DB++</a>
+  <a href="#distributions">Distributions</a>
+</nav>
+
+<!-- Hero + TL;DR -->
+<div class="hero">
+  <h1><span style="color:#6ee7b7;">NearID</span>: Identity Representation Learning<br>via Near-Identity Distractors</h1>
+  <p style="font-size:0.95rem; color:#c8dff4; margin-bottom:0.3rem;">
+    <strong>Aleksandar Cvejic</strong><sup>1</sup>,
+    <strong>Rameen Abdal</strong><sup>2</sup>,
+    <strong>Abdelrahman Eldesokey</strong><sup>1</sup>,
+    <strong>Bernard Ghanem</strong><sup>1</sup>,
+    <strong>Peter Wonka</strong><sup>1</sup>
+  </p>
+  <p style="font-size:0.82rem; color:#7ab8e8; margin-bottom:0.6rem;">
+    <sup>1</sup>King Abdullah University of Science and Technology (KAUST) &nbsp;&nbsp;
+    <sup>2</sup>Snap Inc.
+  </p>
+  <div style="display:flex; justify-content:center; align-items:center; gap:2rem; margin-bottom:1rem;">
+    <img src="logos/kaust_logo.png" alt="KAUST" style="height:40px; filter:brightness(0) invert(1); opacity:0.8;">
+    <img src="logos/snap_logo.png" alt="Snap Inc." style="height:35px; filter:brightness(0) invert(1); opacity:0.8;">
+  </div>
+  <div style="display:flex; justify-content:center; gap:0.6rem; margin-bottom:1rem; flex-wrap:wrap;">
+    <!-- TODO: update arxiv link when available -->
+    <a href="#" style="display:inline-block; background:#b31b1b; color:#fff; padding:0.4rem 1rem; border-radius:6px; text-decoration:none; font-size:0.82rem; font-weight:600;">Paper (coming soon)</a>
+    <a href="https://github.com/Gorluxor/NearID" style="display:inline-block; background:#333; color:#fff; padding:0.4rem 1rem; border-radius:6px; text-decoration:none; font-size:0.82rem; font-weight:600;">Code</a>
+    <a href="https://huggingface.co/Aleksandar/nearid-siglip2" style="display:inline-block; background:#ff9d00; color:#fff; padding:0.4rem 1rem; border-radius:6px; text-decoration:none; font-size:0.82rem; font-weight:600;">Model</a>
+    <!-- TODO: update dataset link when available -->
+    <a href="#" style="display:inline-block; background:#1e90ff; color:#fff; padding:0.4rem 1rem; border-radius:6px; text-decoration:none; font-size:0.82rem; font-weight:600;">Dataset (coming soon)</a>
+  </div>
+
+  <p style="max-width:680px; margin:0 auto 1.2rem; font-size:0.88rem; color:#7ab8e8; line-height:1.5; font-style:italic;">
+    Current vision encoders confuse context for identity. So do the metrics built on them. NearID solves both.
+  </p>
+
+  <div class="tldr">
+    <span class="tldr-pill">SSR <span class="val">99.2%</span> vs 30.7% baseline</span>
+    <span class="tldr-pill">PA <span class="val">99.7%</span> vs 48.8% baseline</span>
+    <span class="tldr-pill">M-H <span class="val blue">0.545</span> human alignment</span>
+    <span class="tldr-pill">M-O <span class="val blue">0.465</span> oracle alignment</span>
+    <span class="tldr-pill">Only <span class="val">15M</span> trainable params</span>
+    <span class="tldr-pill">~324x cheaper than VLM eval</span>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════
+     §0a  Teaser
+     ═══════════════════════════════════════════════════════════ -->
+<section id="teaser">
+<div class="container">
+  <div class="fig-card">
+    <img src="website/teaser.png" alt="NearID teaser: three representation learning paradigms">
+    <p class="fig-caption">
+      <strong>NearID: From Context to Identity.</strong>
+      <strong>(Left)</strong> Traditional representations entangle object identity with background context.
+      <strong>(Middle)</strong> Synthetic data lacks explicit control over visually similar distractors.
+      <strong>(Right)</strong> NearID introduces matched-context distractors to remove contextual shortcuts
+      and isolate intrinsic identity signals.
+    </p>
+  </div>
+</div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════
+     §0b  Method Figure
+     ═══════════════════════════════════════════════════════════ -->
+<section id="method">
+<div class="container">
+  <div class="bubble-wrap"><span class="bubble"><span class="icon">&#9881;</span> Method <span class="takeaway">Frozen SigLIP2 + 15M-param MAP head reshapes similarity geometry</span></span></div>
+  <div class="fig-card">
+    <img src="website/method.png" alt="NearID method: frozen encoder + trained MAP head">
+    <p class="fig-caption">
+      <strong>Left:</strong> In the pretrained manifold, positives can be misaligned
+      (d<sub>i</sub> &lt; d<sub>j</sub>).
+      <strong>Right:</strong> The MAP head boosts true positives (green) and suppresses distractors (red).
+      Multi-view positives are produced via depth-conditioned generation and cross-view feature warping from Objaverse 3D assets (SynCD pipeline, illustrated for completeness).
+    </p>
+  </div>
+</div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════
+     §0c  Main Results Table
+     ═══════════════════════════════════════════════════════════ -->
+<section id="main-results">
+<div class="container">
+  <div class="bubble-wrap"><span class="bubble"><span class="icon">&#128202;</span> Main Results <span class="takeaway">+68% SSR, +51% PA over frozen SigLIP2; human-aligned on DB++</span></span></div>
+
+  <div class="fig-card" style="padding:1.2rem;">
+    <div style="overflow-x:auto;">
+      <table style="width:100%; border-collapse:collapse; font-size:0.85rem; text-align:center;">
+          <thead>
+            <tr style="border-bottom:2px solid #0d1b2a;">
+              <th rowspan="2" style="text-align:left; padding:0.4rem 0.6rem;">Scoring Model</th>
+              <th colspan="2" style="padding:0.3rem 0.4rem; border-bottom:1px solid #c8d4e8;">NearID</th>
+              <th colspan="4" style="padding:0.3rem 0.4rem; border-bottom:1px solid #c8d4e8;">MTG</th>
+              <th style="padding:0.3rem 0.4rem; border-bottom:1px solid #c8d4e8;">DB++</th>
+            </tr>
+            <tr style="border-bottom:1px solid #c8d4e8; font-size:0.8rem; color:#555;">
+              <th style="padding:0.3rem 0.4rem;">SSR&uarr;</th>
+              <th style="padding:0.3rem 0.4rem;">PA&uarr;</th>
+              <th style="padding:0.3rem 0.4rem;">M-O&uarr;</th>
+              <th style="padding:0.3rem 0.4rem;">M-O<sub>pair</sub>&uarr;</th>
+              <th style="padding:0.3rem 0.4rem;">SSR&uarr;</th>
+              <th style="padding:0.3rem 0.4rem;">PA&uarr;</th>
+              <th style="padding:0.3rem 0.4rem;">M-H&uarr;</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="text-align:left; padding:0.35rem 0.6rem;">Qwen3VL 30B</td>
+              <td style="color:#b45309; font-weight:600;">49.73</td>
+              <td style="color:#b45309; font-weight:600;">69.20</td>
+              <td>0.219</td>
+              <td style="color:#b45309; font-weight:600;">0.329</td>
+              <td style="color:#6d28d9; font-weight:600;">17.0</td>
+              <td style="color:#6d28d9; font-weight:600;">26.0</td>
+              <td title="Skipped: autoregressive VLM eval on DB++ is ~324x costlier than embedding-based evaluation">--<sup>&ddagger;</sup></td>
+            </tr>
+            <tr style="background:#f9fafd;">
+              <td style="text-align:left; padding:0.35rem 0.6rem;">CLIP</td>
+              <td>10.31</td><td>20.92</td>
+              <td>0.239</td><td>0.484</td>
+              <td>0.0</td><td>0.0</td>
+              <td style="color:#6d28d9; font-weight:600;">0.493</td>
+            </tr>
+            <tr>
+              <td style="text-align:left; padding:0.35rem 0.6rem;">DINOv2</td>
+              <td>20.43</td><td>34.55</td>
+              <td style="color:#b45309; font-weight:600;">0.324</td>
+              <td style="color:#0369a1; font-weight:700;">0.519</td>
+              <td>0.0</td><td>0.0</td>
+              <td>0.492</td>
+            </tr>
+            <tr style="background:#f9fafd;">
+              <td style="text-align:left; padding:0.35rem 0.6rem;">VSM*</td>
+              <td style="color:#6d28d9; font-weight:600;">32.13</td>
+              <td>46.70</td>
+              <td style="color:#b45309; font-weight:600;">0.394</td>
+              <td>0.445</td>
+              <td style="color:#b45309; font-weight:600;">7.0</td>
+              <td style="color:#b45309; font-weight:600;">24.5</td>
+              <td>0.190</td>
+            </tr>
+            <tr style="border-top:2px solid #c8d4e8;">
+              <td style="text-align:left; padding:0.35rem 0.6rem;">SigLIP2</td>
+              <td>30.74</td>
+              <td style="color:#6d28d9; font-weight:600;">48.81</td>
+              <td>0.180</td><td>0.366</td>
+              <td>0.0</td><td>0.0</td>
+              <td style="color:#b45309; font-weight:600;">0.516</td>
+            </tr>
+            <tr style="background:linear-gradient(90deg, #e8f4fd, #f0f7ff); font-weight:600; border-top:1px solid #4da6ff;">
+              <td style="text-align:left; padding:0.35rem 0.6rem;">NearID (Ours)</td>
+              <td style="color:#0369a1; font-weight:700;">99.17 <span style="font-size:0.75rem;color:#16a34a;">(+68.43)</span></td>
+              <td style="color:#0369a1; font-weight:700;">99.71 <span style="font-size:0.75rem;color:#16a34a;">(+50.90)</span></td>
+              <td style="color:#0369a1; font-weight:700;">0.465 <span style="font-size:0.75rem;color:#16a34a;">(+0.285)</span></td>
+              <td style="color:#6d28d9; font-weight:600;">0.486 <span style="font-size:0.75rem;color:#16a34a;">(+0.120)</span></td>
+              <td style="color:#0369a1; font-weight:700;">35.0 <span style="font-size:0.75rem;color:#16a34a;">(+35.0)</span></td>
+              <td style="color:#0369a1; font-weight:700;">46.5 <span style="font-size:0.75rem;color:#16a34a;">(+46.5)</span></td>
+              <td style="color:#0369a1; font-weight:700;">0.545 <span style="font-size:0.75rem;color:#16a34a;">(+0.029)</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="fig-caption" style="border-top:1px solid #e8edf4; margin-top:0.8rem;">
+        Color coding: <span style="color:#0369a1;font-weight:700;">blue</span> = top-1, <span style="color:#b45309;font-weight:600;">gold</span> = top-2, <span style="color:#6d28d9;font-weight:600;">purple</span> = top-3.
+        <strong>Top:</strong> Existing embedding and VLM methods under the near-identity protocol.
+        <strong>Bottom:</strong> NearID achieves 99.17% SSR (vs. SigLIP2 30.74%)
+        while improving MTG oracle alignment (M-O: 0.465 vs. 0.180) and DB++
+        human alignment (M-H: 0.545 vs. 0.516). * trained directly on MTG.
+        <sup>&ddagger;</sup> Skipped due to computational cost (~324x embedding-based evaluation).
+      </p>
+  </div>
+</div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════
+     §1  Contrastive Paradigm Comparison
+     ═══════════════════════════════════════════════════════════ -->
+<section id="contrastive">
+<div class="container">
+  <div class="bubble-wrap"><span class="bubble"><span class="icon">&#9878;</span> Paradigm <span class="takeaway">Contrastive framework with explicit structured near-identity distractors</span></span></div>
+
+  <div class="contrast-grid">
+    <div class="fig-card">
+      <img src="website/contrastive-1.png"
+           alt="SimCLR vs StableRep vs NearID contrastive paradigms">
+      <p class="fig-caption">
+        <strong>(A) SimCLR:</strong> augmented copies of one real image.
+        <strong>(B) StableRep:</strong> multiple diffusion samples from the same text prompt.
+        <strong>(C) NearID (Ours):</strong> 3D-consistent multi-view images of the same identity,
+        produced via depth-conditioned generation and cross-view feature warping from Objaverse 3D assets (SynCD);
+        a different but visually similar instance inpainted into the same background as the structured negative.
+      </p>
+    </div>
+
+    <div class="contrast-text">
+      <h3>(A) SimCLR</h3>
+      <p>Strong stochastic augmentations of one real image form the positive pair. Learns
+         pixel-level invariance; no semantic distractors are present.</p>
+
+      <h3>(B) StableRep</h3>
+      <p>A diffusion model generates multiple images from the same text caption.
+         Learns caption-level invariance but cannot distinguish intra-class instances.</p>
+
+      <h3>(C) NearID <em>(Ours)</em></h3>
+      <div class="ours-box">
+        <p>
+          Positives are 3D-consistent multi-view images of the <strong>same object identity</strong>,
+          produced via depth-conditioned diffusion generation and cross-view feature warping
+          from Objaverse 3D assets (SynCD).
+          <strong>Near-identity distractors</strong> &ndash; a <em>different but visually similar instance</em>
+          inpainted into the <em>exact same background</em> &ndash; are the key negative signal
+          absent from both SimCLR and StableRep.
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════
+     §2  KPCA Timelapse
+     ═══════════════════════════════════════════════════════════ -->
+<section id="timelapse">
+<div class="container">
+  <div class="bubble-wrap"><span class="bubble"><span class="icon">&#127916;</span> KPCA Evolution <span class="takeaway">Positives cluster, distractors separate over 3300 training steps</span></span></div>
+
+  <div class="timelapse-wrap">
+    <div class="timelapse-desc">
+      <h3>What to look for</h3>
+      <p>
+        In the <strong>SigLIP2 baseline</strong> (frozen), positives and near-identity
+        distractors of the same identity are interleaved &ndash; the embedding cannot tell them apart.
+      </p>
+      <p>
+        As NearID training progresses, same-identity positives (&bull;) collapse into tight clusters
+        while distractors (&#10006;) are pushed to distinct regions &ndash; even though they share the
+        exact same background as the anchor.
+      </p>
+      <ul class="steps-list">
+        <li>Step 0: SigLIP2 frozen &ndash; distractors and positives overlap</li>
+        <li>Steps 100&ndash;900: identity clusters begin to form</li>
+        <li>Steps 1000&ndash;2500: distractors progressively rejected</li>
+        <li>Step 3300 (final): tight positive clusters, clear separation</li>
+      </ul>
+      <p style="font-size:0.83rem;color:#888;margin-top:1rem;">
+        7 identities, val split. KernelPCA (cosine), Procrustes-aligned to final frame,
+        global axis limits. 35 frames at 180 ms/frame.
+      </p>
+    </div>
+
+    <div>
+      <div class="gif-border">
+        <img src="website/kpca_timelapse.gif"
+             alt="KernelPCA timelapse: SigLIP2 baseline through NearID step 3300"
+             loading="lazy">
+      </div>
+    </div>
+  </div>
+
+  <br>
+  <div class="fig-card">
+    <img src="website/kpca_summary.png"
+         alt="KernelPCA summary: SigLIP2 / step 1600 / NearID step 3300">
+    <p class="fig-caption">
+      <strong>Static keyframes.</strong>
+      <strong>Left:</strong> SigLIP2 frozen &ndash; positives (&bull;) and distractors (&#10006;)
+      cluster indistinguishably.
+      <strong>Center:</strong> Step 1600 &ndash; identity structure emerges.
+      <strong>Right:</strong> NearID final (step 3300) &ndash; compact positive clusters,
+      distractors pushed away. Same axis limits and alignment across all panels.
+    </p>
+  </div>
+</div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════
+     §3  NearID Qualitative Results
+     ═══════════════════════════════════════════════════════════ -->
+<section id="nearid-qual">
+<div class="container">
+  <div class="bubble-wrap"><span class="bubble"><span class="icon">&#128444;</span> NearID Qualitative <span class="takeaway">Anchor | Positives | Distractors &ndash; S = SigLIP2, N = NearID</span></span></div>
+
+  <div class="gallery">
+    <input type="radio" name="ntabs" id="ntab1" checked>
+    <input type="radio" name="ntabs" id="ntab2">
+    <input type="radio" name="ntabs" id="ntab3">
+    <input type="radio" name="ntabs" id="ntab4">
+    <input type="radio" name="ntabs" id="ntab5">
+    <input type="radio" name="ntabs" id="ntab6">
+    <div class="tab-bar">
+      <label for="ntab1">Figure 7</label>
+      <label for="ntab2">Seed 42</label>
+      <label for="ntab3">Seed 123</label>
+      <label for="ntab4">Seed 11</label>
+      <label for="ntab5">Seed 22</label>
+      <label for="ntab6">Seed 33</label>
+    </div>
+    <div class="tab-panels">
+      <div class="np1">
+        <div class="fig-card">
+          <img src="website/qual_nearid_999.png" alt="NearID qualitative — seed 999">
+          <p class="fig-caption">
+            <strong>Figure 7 (Seed 999).</strong> Includes VLM (VL) and VSM (V) scores.
+            SigLIP2 rates distractors on par with positives (e.g., seashell: S=0.97 distractor vs 0.79 positive).
+            NearID correctly suppresses the distractor to 0.71.
+            VLM is inconsistent: 0.10 for basketball yet 1.00 for a spacecraft distractor.
+          </p>
+        </div>
+      </div>
+      <div class="np2">
+        <div class="fig-card">
+          <img src="website/qual_nearid_42.png" alt="NearID qualitative — seed 42">
+          <p class="fig-caption"><strong>Seed 42.</strong> Includes VLM and VSM scores. SigLIP2 shows repeated failures where distractors score as high as genuine positives.</p>
+        </div>
+      </div>
+      <div class="np3">
+        <div class="fig-card">
+          <img src="website/qual_nearid_123.png" alt="NearID qualitative — seed 123">
+          <p class="fig-caption"><strong>Seed 123.</strong> Includes VLM and VSM scores. NearID correctly suppresses distractors even when they share the exact same background context as the anchor.</p>
+        </div>
+      </div>
+      <div class="np4">
+        <div class="fig-card">
+          <img src="website/qual_nearid_11.png" alt="NearID qualitative — seed 11">
+          <p class="fig-caption"><strong>Seed 11.</strong> Random test-split samples. NearID consistently assigns higher similarity to positives than to near-identity distractors.</p>
+        </div>
+      </div>
+      <div class="np5">
+        <div class="fig-card">
+          <img src="website/qual_nearid_22.png" alt="NearID qualitative — seed 22">
+          <p class="fig-caption"><strong>Seed 22.</strong> Random test-split samples. NearID maintains clear margins across diverse object categories.</p>
+        </div>
+      </div>
+      <div class="np6">
+        <div class="fig-card">
+          <img src="website/qual_nearid_33.png" alt="NearID qualitative — seed 33">
+          <p class="fig-caption"><strong>Seed 33.</strong> Random test-split samples. The NearID score gap is consistently larger than the frozen SigLIP2 baseline.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════
+     §4  MTG Qualitative Results
+     ═══════════════════════════════════════════════════════════ -->
+<section id="mtg-qual">
+<div class="container">
+  <div class="bubble-wrap"><span class="bubble"><span class="icon">&#128269;</span> MTG Qualitative <span class="takeaway">Part-level edits &ndash; O = Oracle, red = edited region</span></span></div>
+
+  <div class="gallery">
+    <input type="radio" name="mtabs" id="mtab1" checked>
+    <input type="radio" name="mtabs" id="mtab2">
+    <input type="radio" name="mtabs" id="mtab3">
+    <div class="tab-bar">
+      <label for="mtab1">Figure 8</label>
+      <label for="mtab2">Seed 42</label>
+      <label for="mtab3">Seed 256</label>
+    </div>
+    <div class="tab-panels-m">
+      <div class="mp1">
+        <div class="fig-card">
+          <img src="website/qual_mtg_123.png" alt="MTG qualitative — seed 123">
+          <p class="fig-caption"><strong>Figure 8 (Seed 123).</strong> NearID captures part-level identity differences even when the Oracle edit ratio is moderate (O &lt; 0.5).</p>
+        </div>
+      </div>
+      <div class="mp2">
+        <div class="fig-card">
+          <img src="website/qual_mtg_42.png" alt="MTG qualitative — seed 42">
+          <p class="fig-caption">
+            <strong>Seed 42.</strong>
+            SigLIP2 ranks Distractor 1 <em>above</em> the genuine Positive in the ornate doll row (S=0.93 vs 0.89).
+            NearID correctly ranks Positive (0.96) above both distractors (0.79, 0.84).
+          </p>
+        </div>
+      </div>
+      <div class="mp3">
+        <div class="fig-card">
+          <img src="website/qual_mtg_256.png" alt="MTG qualitative — seed 256">
+          <p class="fig-caption"><strong>Seed 256.</strong> NearID's advantage over frozen SigLIP2 and VSM is consistent across localized edits of varying severity.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════
+     §5  Attention Maps
+     ═══════════════════════════════════════════════════════════ -->
+<section id="attention">
+<div class="container">
+  <div class="bubble-wrap"><span class="bubble"><span class="icon">&#128065;</span> Attention <span class="takeaway">MAP head re-focuses on identity-discriminative regions</span></span></div>
+
+  <div class="two-col">
+    <div class="fig-card">
+      <img src="website/attn_nearid.png" alt="Attention maps on NearID dataset">
+      <p class="fig-caption">
+        <strong>NearID dataset.</strong> Left: input. Center: SigLIP2 backbone attention (before training).
+        Right: NearID attention after training &ndash; re-focused onto identity-discriminative parts.
+      </p>
+    </div>
+    <div class="fig-card">
+      <img src="website/attn_comparison.png" alt="Positive vs confound attention split">
+      <p class="fig-caption">
+        <strong>Positive vs. confound.</strong> NearID attention concentrates on surface details
+        for the positive (left) while diffusing on the confound (right) &ndash;
+        despite identical background context.
+      </p>
+    </div>
+  </div>
+</div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════
+     §6  DreamBench++ Per-Category
+     ═══════════════════════════════════════════════════════════ -->
+<section id="dreambench">
+<div class="container">
+  <div class="bubble-wrap"><span class="bubble"><span class="icon">&#9733;</span> DreamBench++ <span class="takeaway">Per-category M-H &ndash; comparable human alignment at ~324x lower cost than VLM evaluation</span></span></div>
+
+  <div class="fig-card">
+    <img src="website/dbpp_bar.png" alt="DreamBench++ per-category Pearson correlation bar chart">
+    <p class="fig-caption">
+      <strong>M-H by category.</strong>
+      NearID (red) leads on Object (0.549) and ranks competitively on Animal, Human, and Style.
+      GPT-4o (orange) leads on Object but requires a costly closed-source API call per image pair.
+      NearID achieves comparable performance with a 15M-param MAP head at &lt;1 ms per embedding.
+    </p>
+  </div>
+</div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════
+     §7  MTG Score Distributions
+     ═══════════════════════════════════════════════════════════ -->
+<section id="distributions">
+<div class="container">
+  <div class="bubble-wrap"><span class="bubble"><span class="icon">&#128200;</span> Score Distributions <span class="takeaway">NearID tracks Oracle; VSM and VLM do not</span></span></div>
+
+  <div class="fig-card">
+    <img src="website/mtg_ecdf.png" alt="MTG ECDF: NearID vs VLM, VSM, Oracle">
+    <p class="fig-caption">
+      <strong>ECDF on MTG test set.</strong>
+      <strong>Oracle</strong> (blue) is the reference.
+      <strong>NearID</strong> (pink) closely tracks Oracle &ndash; scores correlate with actual part-edit severity.
+      <strong>VSM</strong> (green) clusters near 1, insensitive to part-level differences.
+      <strong>VLM 30B</strong> (brown) accumulates at low scores, reflecting categorical reasoning.
+    </p>
+  </div>
+</div>
+</section>
+
+
+<!-- Footer -->
+<footer>
+  NearID &nbsp;&middot;&nbsp;
+  KAUST &amp; Snap Inc.
+</footer>
+
+</body>
+</html>
