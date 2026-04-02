@@ -32,7 +32,7 @@ try:
 except ImportError:
     Qwen3VLForConditionalGeneration = None
 
-from .config import EncodeIDConfig
+from .config import NearIDConfig
 
 
 # ==============================================================================
@@ -566,16 +566,16 @@ def build_encoder_and_processors(
 
 
 # ==============================================================================
-# 4. EncodeIDModel (HuggingFace PreTrainedModel for training)
+# 4. NearIDModel (HuggingFace PreTrainedModel for training)
 # ==============================================================================
 
-class EncodeIDPreTrainedModel(PreTrainedModel):
-    config_class = EncodeIDConfig
-    base_model_prefix = "encode_id"
+class NearIDPreTrainedModel(PreTrainedModel):
+    config_class = NearIDConfig
+    base_model_prefix = "nearid"
     _keys_to_ignore_on_load_missing = [r"encoder_wrapper.*"]
 
-class EncodeIDModel(EncodeIDPreTrainedModel):
-    def __init__(self, config: EncodeIDConfig):
+class NearIDModel(NearIDPreTrainedModel):
+    def __init__(self, config: NearIDConfig):
         super().__init__(config)
         self.config = config
 
@@ -650,7 +650,7 @@ class EncodeIDModel(EncodeIDPreTrainedModel):
         return features
 
 # Register with HF Auto classes
-AutoConfig.register("encode_id", EncodeIDConfig)
-AutoModel.register(EncodeIDConfig, EncodeIDModel)
-EncodeIDConfig.register_for_auto_class()
-EncodeIDModel.register_for_auto_class("AutoModel")
+AutoConfig.register("nearid", NearIDConfig)
+AutoModel.register(NearIDConfig, NearIDModel)
+NearIDConfig.register_for_auto_class()
+NearIDModel.register_for_auto_class("AutoModel")

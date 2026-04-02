@@ -5,8 +5,8 @@ from simple_parsing.helpers import Serializable, list_field
 
 
 # --- 1. The Hugging Face "Model" Config (Artifact) ---
-class EncodeIDConfig(PretrainedConfig):
-    model_type = "encode_id"
+class NearIDConfig(PretrainedConfig):
+    model_type = "nearid"
 
     def __init__(
         self,
@@ -49,7 +49,7 @@ class WandbConfig(Serializable):
 
 @dataclass
 class DataConfig(Serializable):
-    train_path: str = "Aleksandar/EncodeID"
+    train_path: str = "Aleksandar/NearID"
     neg_paths: List[str] = list_field()
     neg_paths_val: Optional[List[str]] = list_field(default=[])
     neg_paths_test: Optional[List[str]] = list_field(default=[])

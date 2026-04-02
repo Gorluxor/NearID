@@ -20,11 +20,11 @@ from tqdm.auto import tqdm
 from transformers import get_scheduler
 from datasets import load_dataset
 
-from .config import TrainConfig, EncodeIDConfig
-from .models import EncodeIDModel
+from .config import TrainConfig, NearIDConfig
+from .models import NearIDModel
 from .data.nearid_dataset import (
-    EncodeIDDataset, collate_encodeid, pack_for_losses_dist,
-    EncodeIDDataConfig, load_indices_json,
+    NearIDDataset, collate_nearid, pack_for_losses_dist,
+    NearIDDataConfig, load_indices_json,
 )
 from .data.mtg_dataset import MTGTrainDataset, MultiDataset
 from . import losses as losses_dist
@@ -63,13 +63,13 @@ def build_eval_loaders(
         assert len(neg_names) == len(neg_ds_list)
 
         for neg_name, neg_ds in zip(neg_names, neg_ds_list):
-            e_ds = EncodeIDDataset(
+            e_ds = NearIDDataset(
                 pos_ds,
                 hf_negs=[neg_ds],
                 neg_names=[neg_name],
                 processor=processor,
                 indices=indices,
-                config=EncodeIDDataConfig(
+                config=NearIDDataConfig(
                     mask_prob=0.0,
                     shuffle_anchor=False,
                     per_slot_neg_dataset=True,
@@ -86,7 +86,7 @@ def build_eval_loaders(
                 batch_size=cfg.eval_batch_size,
                 shuffle=False,
                 num_workers=cfg.data.num_workers,
-                collate_fn=collate_encodeid,
+                collate_fn=collate_nearid,
                 pin_memory=False,
             )
             logger.info(f"Created eval loader for split={split} with neg='{neg_name}' ({len(e_ds)} samples)")
@@ -228,7 +228,7 @@ def main(cfg: TrainConfig):
     logger.info(f"{cfg.data.neg_paths_test=}")
 
     # 2. Model Setup
-    model_config = EncodeIDConfig(
+    model_config = NearIDConfig(
         backbone=cfg.backbone,
         pretrained_backbone=cfg.pretrained_backbone,
         pooling=cfg.pooling,
@@ -243,7 +243,7 @@ def main(cfg: TrainConfig):
     )
     logger.info(f"Model config: {model_config}")
     with accelerator.main_process_first():
-        model = EncodeIDModel(model_config)
+        model = NearIDModel(model_config)
 
     # Head-only training: freeze backbone
     for p in model.encoder_wrapper.parameters():
@@ -264,7 +264,7 @@ def main(cfg: TrainConfig):
                 logger.info(f"Trainable: {name} | Shape: {list(p.shape)}")
 
     # 3. Data Setup
-    data_cfg = EncodeIDDataConfig(
+    data_cfg = NearIDDataConfig(
         mask_prob=cfg.data.mask_prob,
         shuffle_anchor=cfg.data.shuffle_anchor,
         per_slot_neg_dataset=cfg.data.per_slot_neg_dataset,
@@ -312,7 +312,7 @@ def main(cfg: TrainConfig):
     train_dataset = None
     if has_encodeid_negs:
         neg_ds_list = cfg.data.neg_paths
-        train_dataset = EncodeIDDataset(
+        train_dataset = NearIDDataset(
             pos_ds,
             hf_negs=neg_ds_list,
             processor=model.processor,
@@ -325,7 +325,7 @@ def main(cfg: TrainConfig):
     if has_mtg:
         mtg_dataset = MTGTrainDataset(
             processor=model.processor,
-            config=EncodeIDDataConfig(
+            config=NearIDDataConfig(
                 mask_prob=cfg.data.mask_prob,
                 mask_prob_apn=cfg.data.mask_prob_apn,
                 shuffle_anchor=cfg.data.shuffle_anchor,
@@ -357,7 +357,7 @@ def main(cfg: TrainConfig):
         batch_size=cfg.data.batch_size,
         shuffle=True,
         num_workers=cfg.data.num_workers,
-        collate_fn=collate_encodeid,
+        collate_fn=collate_nearid,
         pin_memory=False,
     )
 

@@ -1,5 +1,5 @@
 # data_mtg.py
-"""MTG dataset wrapper + MultiDataset for joint EncodeID + MTG training."""
+"""MTG dataset wrapper + MultiDataset for joint NearID + MTG training."""
 from __future__ import annotations
 
 import ctypes
@@ -17,7 +17,7 @@ from torchvision.transforms import ColorJitter
 import torchvision.transforms.functional as TF
 
 from .nearid_dataset import (
-    EncodeIDDataConfig,
+    NearIDDataConfig,
     apply_mask_to_image_pil,
     binarize_mask,
     dilate_mask,
@@ -62,7 +62,7 @@ def _calculate_ratio(
 class MTGTrainDataset(Dataset):
     """
     Wraps the HuggingFace ``abdo-eldesokey/mtg-dataset`` and emits items in the
-    **exact same dict format** as ``EncodeIDDataset``.
+    **exact same dict format** as ``NearIDDataset``.
 
     Slot mapping (pad_to=3):
         pos0 (anchor) : image_1_original
@@ -82,15 +82,15 @@ class MTGTrainDataset(Dataset):
         Higher ratio -> more editing -> easier negative -> larger achievable margin.
         Falls back to ``mtg_margin`` when masks are missing.
 
-    This is fully compatible with ``collate_encodeid`` and ``pack_for_losses_dist``.
+    This is fully compatible with ``collate_nearid`` and ``pack_for_losses_dist``.
     """
 
-    PAD_TO = 3  # must match EncodeIDDataConfig.pad_to
+    PAD_TO = 3  # must match NearIDDataConfig.pad_to
 
     def __init__(
         self,
         processor=None,
-        config: EncodeIDDataConfig = EncodeIDDataConfig(),
+        config: NearIDDataConfig = NearIDDataConfig(),
         split: str = "train",
         hf_path: str = "abdo-eldesokey/mtg-dataset",
         indices: Optional[Sequence[int]] = None,
@@ -109,7 +109,7 @@ class MTGTrainDataset(Dataset):
         self.return_pil = return_pil or (processor is None)
         self.mtg_margin = mtg_margin
         self.mtg_min = mtg_min
-        # Worker-safe epoch (mirrors EncodeIDDataset)
+        # Worker-safe epoch (mirrors NearIDDataset)
         self._epoch_shared = _mp.Value(ctypes.c_long, 0)
 
         # Subset mapping
@@ -140,7 +140,7 @@ class MTGTrainDataset(Dataset):
     def _map_index(self, i: int) -> int:
         return int(self._indices[i]) if self._indices is not None else int(i)
 
-    # -- deterministic RNG (same scheme as EncodeIDDataset) ----------------
+    # -- deterministic RNG (same scheme as NearIDDataset) ----------------
 
     def _rng(self, *keys: int) -> np.random.Generator:
         h = (self.cfg.base_seed * 1_000_003) ^ (self._epoch * 10_007)
@@ -150,7 +150,7 @@ class MTGTrainDataset(Dataset):
             h = (h * 6364136223846793005 + 1) & 0xFFFFFFFFFFFFFFFF
         return np.random.default_rng(h & 0xFFFFFFFF)
 
-    # -- anchor shuffle (identical logic to EncodeIDDataset) ---------------
+    # -- anchor shuffle (identical logic to NearIDDataset) ---------------
 
     def _compute_perm(self, pos_mask: torch.Tensor, dataset_idx: int) -> torch.Tensor:
         pad_to = self.PAD_TO
@@ -237,7 +237,7 @@ class MTGTrainDataset(Dataset):
     ) -> Image.Image:
         """Apply deterministic augmentations (flip / jitter / translate+scale).
 
-        Same logic as EncodeIDDataset._apply_augmentations.
+        Same logic as NearIDDataset._apply_augmentations.
         """
         role_seed = 1 if is_pos else 2
 
@@ -428,7 +428,7 @@ class MTGTrainDataset(Dataset):
                             neg_imgs[slot], dataset_idx, slot, is_pos=False  # type: ignore[arg-type]
                         )
 
-            # -- Build output dict (same schema as EncodeIDDataset) ------------
+            # -- Build output dict (same schema as NearIDDataset) ------------
             neg_source = torch.zeros(self.PAD_TO, dtype=torch.long)  # single source
 
             out: Dict[str, Any] = {
@@ -471,7 +471,7 @@ class MultiDataset(ConcatDataset):
     """
     ``torch.utils.data.ConcatDataset`` that propagates ``set_epoch`` to every
     child dataset that supports it (duck-typed).  Drop-in replacement — works
-    with ``collate_encodeid`` because every child emits the same dict schema.
+    with ``collate_nearid`` because every child emits the same dict schema.
     """
 
     def __init__(self, datasets: List[Dataset]):

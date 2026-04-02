@@ -5,7 +5,7 @@ import wandb
 from pathlib import Path
 import torch
 
-from evaluation.inference import EncodeIDInference
+from evaluation.inference import NearIDInference
 from evaluation.metrics import (
     add_sim_vs_crossji_with_overall,
     add_disc_sim_vs_crossii,
@@ -72,7 +72,7 @@ class IdentityEvaluator:
 
     def run(self, checkpoint_path: str, dataloader, step: int, split_name: str, neg_name: str):
         # 1. Run Inference Engine
-        engine = EncodeIDInference(checkpoint_path, device="cuda")
+        engine = NearIDInference(checkpoint_path, device="cuda")
         data = engine.get_embeddings(dataloader)
         
         embs = data["embeddings"] 
@@ -158,19 +158,19 @@ def process(processor, img, dtype, return_tensors="pt", device="cuda"):
     return processor(images=img, return_tensors=return_tensors).pixel_values.to(device, dtype)
 
 class MTGOnlineEvaluator:
-    """Evaluates EncodeID on the MTG Dataset during the training loop."""
+    """Evaluates NearID on the MTG Dataset during the training loop."""
     def __init__(self, split="test"):
         from datasets import load_dataset
         self.dataset = load_dataset("abdo-eldesokey/mtg-dataset", split=split)
 
     @torch.inference_mode()
     def run(self, checkpoint_path: str, step: int, device: str = "cuda"):
-        from inference import EncodeIDInference
+        from inference import NearIDInference
         import torch.nn.functional as F
         from tqdm.auto import tqdm
         import wandb
         # Uses the same aligned inference engine
-        engine = EncodeIDInference(checkpoint_path, device=device)
+        engine = NearIDInference(checkpoint_path, device=device)
         model = engine.model.to(device)  # type: ignore
         processor = model.processor
         dtype = next(model.parameters()).dtype # Match precision (Bfloat16/Fp16)

@@ -3090,7 +3090,7 @@ class MarginCosineTripletLoss(StandardizedLoss):
 #
 # ORACLE TARGET MAPPING:
 #   margin = ratio = part_mask_area / obj_mask_area  (for MTG)
-#   margin = heuristic per generation method          (for EncodeID)
+#   margin = heuristic per generation method          (for NearID)
 #
 #   target_sim(b, k) = 1 − margin(b, k)
 #     ratio = 0   → target = 1.0   (nothing edited  → identical)

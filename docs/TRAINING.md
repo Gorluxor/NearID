@@ -9,7 +9,7 @@
    pip install -e ".[train]"
    ```
 
-2. **Data:** The NearID dataset is loaded from HuggingFace Hub (`Aleksandar/EncodeID`). Negative source datasets should be provided as HuggingFace dataset paths or local directories.
+2. **Data:** The NearID dataset is loaded from HuggingFace Hub (`Aleksandar/NearID`). Negative source datasets should be provided as HuggingFace dataset paths or local directories.
 
 3. **Hardware:** Single NVIDIA A100 GPU (or equivalent with 40GB+ VRAM). The model trains with mixed precision (fp16) and uses ~15M trainable parameters.
 
@@ -27,7 +27,7 @@ CUDA_VISIBLE_DEVICES=0 accelerate launch -m training.train \
     --lr 1e-4 \
     --epochs 11 \
     --data.batch_size 128 \
-    --data.train_path "Aleksandar/EncodeID" \
+    --data.train_path "Aleksandar/NearID" \
     --data.neg_paths "[path/to/neg_source_1,path/to/neg_source_2]" \
     --data.val_indices_path "splits/val.json" \
     --data.test_indices_path "splits/test.json" \
@@ -82,7 +82,7 @@ Checkpoints are saved every `--save_steps` steps to `{output_dir}/checkpoint-{st
 
 ## Converting to HuggingFace Release Format
 
-After training, convert the EncodeID checkpoint to the clean NearID format for release:
+After training, convert the NearID checkpoint to the clean NearID format for release:
 
 ```bash
 python -m training.convert_checkpoint \

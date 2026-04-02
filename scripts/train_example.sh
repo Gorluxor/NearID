@@ -5,7 +5,7 @@
 #   conda env create -f environment.yaml
 #   conda activate nearid
 #
-# Data: The NearID dataset is loaded from HuggingFace Hub (Aleksandar/EncodeID).
+# Data: The NearID dataset is loaded from HuggingFace Hub (Aleksandar/NearID).
 #       Negative sources should be provided as HF dataset paths or local directories.
 
 CUDA_VISIBLE_DEVICES=0 accelerate launch -m training.train \
@@ -17,7 +17,7 @@ CUDA_VISIBLE_DEVICES=0 accelerate launch -m training.train \
     --lr 1e-4 \
     --epochs 11 \
     --data.batch_size 128 \
-    --data.train_path "Aleksandar/EncodeID" \
+    --data.train_path "Aleksandar/NearID" \
     --data.neg_paths "[path/to/neg_source_1,path/to/neg_source_2]" \
     --data.val_indices_path "splits/val.json" \
     --data.test_indices_path "splits/test.json" \

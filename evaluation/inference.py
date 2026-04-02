@@ -5,20 +5,20 @@ from typing import Dict, Any, List
 from tqdm.auto import tqdm
 from transformers import AutoConfig, AutoModel
 
-from training.models import EncodeIDModel
-from training.config import EncodeIDConfig
+from training.models import NearIDModel
+from training.config import NearIDConfig
 
 # Essential for from_pretrained to find your custom logic
-AutoConfig.register("encode_id", EncodeIDConfig)
-AutoModel.register(EncodeIDConfig, EncodeIDModel)
+AutoConfig.register("nearid", NearIDConfig)
+AutoModel.register(NearIDConfig, NearIDModel)
 
-class EncodeIDInference:
+class NearIDInference:
     def __init__(self, checkpoint_path: str, device: str = "cuda"):
         self.device = device
         
         # 1. Native HF Loading 
         # trust_remote_code=True is essential if loading from a remote hub
-        self.model = EncodeIDModel.from_pretrained(
+        self.model = NearIDModel.from_pretrained(
             checkpoint_path, 
             trust_remote_code=True,
             # torch_dtype="auto"  # Let HF decide the best dtype (Bf16/Fp16) based on the checkpoint and device

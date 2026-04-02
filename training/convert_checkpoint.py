@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""Convert an EncodeID checkpoint (checkpoint-3300) to the NearID HF format.
+"""Convert an NearID checkpoint (checkpoint-3300) to the NearID HF format.
 
 Usage::
 
@@ -19,7 +19,7 @@ from safetensors.torch import load_file, save_file
 
 
 def convert(checkpoint_dir: str, output_dir: str) -> None:
-    """Remap EncodeID state dict keys to NearID format."""
+    """Remap legacy state dict keys to NearID format."""
     os.makedirs(output_dir, exist_ok=True)
 
     # --- 1. Load source weights -----------------------------------------------
@@ -114,19 +114,19 @@ def verify(output_dir: str, checkpoint_dir: str) -> None:
     """Load both models, run a forward pass, compare embeddings."""
     import sys
 
-    # Add src/ to path for EncodeIDModel
+    # Add src/ to path for NearIDModel
     src_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "src")
     sys.path.insert(0, src_dir)
 
-    from config import EncodeIDConfig
-    from models_dist import EncodeIDModel
+    from config import NearIDConfig
+    from models_dist import NearIDModel
 
     device = "cuda" if torch.cuda.is_available() else "cpu"
 
     # --- Load original model ---
     print("\n--- Verification ---")
-    print(f"Loading original EncodeIDModel from {checkpoint_dir}...")
-    old_model = EncodeIDModel.from_pretrained(checkpoint_dir, trust_remote_code=True)
+    print(f"Loading original NearIDModel from {checkpoint_dir}...")
+    old_model = NearIDModel.from_pretrained(checkpoint_dir, trust_remote_code=True)
     old_model.to(device=device)
     old_model.eval()
 
@@ -169,11 +169,11 @@ def verify(output_dir: str, checkpoint_dir: str) -> None:
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Convert EncodeID → NearID checkpoint")
+    parser = argparse.ArgumentParser(description="Convert legacy checkpoint → NearID checkpoint")
     parser.add_argument(
         "--checkpoint",
         required=True,
-        help="Path to EncodeID checkpoint directory (e.g. .../checkpoint-3300)",
+        help="Path to NearID checkpoint directory (e.g. .../checkpoint-3300)",
     )
     parser.add_argument(
         "--output",

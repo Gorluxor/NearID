@@ -23,7 +23,7 @@ Use `sim_test.py` to compute per-sample similarity scores:
 CUDA_VISIBLE_DEVICES=0 python -m evaluation.sim_test \
     --mode fullneg \
     --model "Aleksandar/nearid-siglip2" \
-    --ds "Aleksandar/EncodeID" \
+    --ds "Aleksandar/NearID" \
     --ds_neg "path/to/negative_source" \
     --split train \
     --findx "splits/test.json" \
@@ -34,7 +34,7 @@ CUDA_VISIBLE_DEVICES=0 python -m evaluation.sim_test \
 CUDA_VISIBLE_DEVICES=0 python -m evaluation.sim_test \
     --mode fullneg \
     --model "./runs/trains/checkpoint-3300" \
-    --ds "Aleksandar/EncodeID" \
+    --ds "Aleksandar/NearID" \
     --ds_neg "path/to/negative_source" \
     --split train \
     --findx "splits/test.json" \

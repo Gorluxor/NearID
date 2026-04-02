@@ -29,8 +29,8 @@ SIM_MODELS = {
     # TODO: Add later VSM (Mind the glitch), and AlphaCLIP, might need different env
     "dinov2": "facebook~dinov2-large",
     "vsm":  "vsm:vsm",
-    # EncodeID trained checkpoints (R1-R9) — auto-discovered via encodeid: prefix
-    # Short tags from shorten_model_tag(): "encodeid:<ExperimentName>~<step>"
+    # NearID trained checkpoints (R1-R9) — auto-discovered via nearid: prefix
+    # Short tags from shorten_model_tag(): "nearid:<ExperimentName>~<step>"
 }
 
 # Families whose CSVs should be auto-discovered via glob (no need to list each token)

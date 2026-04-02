@@ -126,7 +126,7 @@ def _load_hf_any(path_or_repo: str, split: str = "train") -> HFDataset:
 # -----------------------------------------------------------------------------
 
 @dataclass(frozen=True)
-class EncodeIDDataConfig:
+class NearIDDataConfig:
     # Column prefixes
     pos_prefix: str = "images"    # images1..3
     neg_prefix: str = "nimg"      # nimg1..3
@@ -197,7 +197,7 @@ class EncodeIDDataConfig:
 # Dataset
 # -----------------------------------------------------------------------------
 
-class EncodeIDDataset(Dataset):
+class NearIDDataset(Dataset):
     """
     Returns fixed 3 positive slots + fixed 3 negative slots (padded) with optional masking.
 
@@ -221,7 +221,7 @@ class EncodeIDDataset(Dataset):
         hf_pos,
         hf_negs: Optional[Sequence[Any]] = None,
         processor=None,
-        config: EncodeIDDataConfig = EncodeIDDataConfig(),
+        config: NearIDDataConfig = NearIDDataConfig(),
         indices: Optional[Sequence[int]] = None,
         return_pil: bool = False,
         neg_names: Optional[Sequence[str]] = None,
@@ -783,7 +783,7 @@ class EncodeIDDataset(Dataset):
         except Exception as exc:
             if self.cfg.fail_hard:
                 raise
-            logger.debug("EncodeIDDataset.__getitem__(%d) failed: %s", i, exc)
+            logger.debug("NearIDDataset.__getitem__(%d) failed: %s", i, exc)
             return None
 
 
@@ -793,7 +793,7 @@ class EncodeIDDataset(Dataset):
 # Collate
 # -----------------------------------------------------------------------------
 
-def collate_encodeid(batch: List[Optional[Dict[str, Any]]]) -> Optional[Dict[str, Any]]:
+def collate_nearid(batch: List[Optional[Dict[str, Any]]]) -> Optional[Dict[str, Any]]:
     batch = [b for b in batch if b is not None]
     if not batch:
         return None

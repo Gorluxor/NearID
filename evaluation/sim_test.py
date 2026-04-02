@@ -19,17 +19,17 @@ Key idea:
 # │ Output CSVs go to --output_folder (default: runs/evals/).              │
 # │                                                                        │
 # │ scripts/gen_min.py pools results from TWO roots:                       │
-# │   - EncodeID5R (primary): trained checkpoints + VSM                    │
-# │   - EncodeID5  (baseline): frozen baselines (CLIP, SigLIP2, DINOv2,   │
+# │   - NearID5R (primary): trained checkpoints + VSM                    │
+# │   - NearID5  (baseline): frozen baselines (CLIP, SigLIP2, DINOv2,   │
 # │                             Qwen3-VL 4B/8B/30B)                        │
 # │                                                                        │
 # │ gen_min.py deduplicates by sim_model NAME — if a model appears in      │
-# │ EncodeID5R (even for 1 source), ALL data for that model from EncodeID5 │
+# │ NearID5R (even for 1 source), ALL data for that model from NearID5 │
 # │ is SILENTLY DROPPED. This caused the Qwen3-VL-30B pooling bug where   │
 # │ only 2/7 sources were included (n=998 instead of 3500).               │
 # │                                                                        │
-# │ RULE: Baseline VLM outputs (Qwen3-VL-*) must go ONLY into EncodeID5,  │
-# │       NEVER into EncodeID5R. Trained checkpoints go into EncodeID5R.   │
+# │ RULE: Baseline VLM outputs (Qwen3-VL-*) must go ONLY into NearID5,  │
+# │       NEVER into NearID5R. Trained checkpoints go into NearID5R.   │
 # │       Stray duplicates in the wrong root cause silent data loss.       │
 # └────────────────────────────────────────────────────────────────────────┘
 
@@ -86,15 +86,15 @@ except ImportError:
     VSM_AVAILABLE = False
 
 # -----------------------------------------------------------------------------
-# Optional EncodeID (trained model) availability
+# Optional NearID (trained model) availability
 # -----------------------------------------------------------------------------
 
 try:
-    from training.models import EncodeIDModel, EncodeIDConfig  # type: ignore
+    from training.models import NearIDModel, NearIDConfig  # type: ignore
     from transformers import AutoConfig
     try:
-        AutoConfig.register("encode_id", EncodeIDConfig)
-        AutoModel.register(EncodeIDConfig, EncodeIDModel)
+        AutoConfig.register("nearid", NearIDConfig)
+        AutoModel.register(NearIDConfig, NearIDModel)
     except Exception:
         pass  # Already registered
     ENCODEID_AVAILABLE = True
@@ -165,7 +165,7 @@ def is_vlm_model(model_id: str) -> bool:
 
 
 def is_encodeid_checkpoint(path: str) -> bool:
-    """Detect if path is a local EncodeID checkpoint (has config.json with model_type='encode_id')."""
+    """Detect if path is a local NearID checkpoint (has config.json with model_type='nearid')."""
     if not os.path.isdir(path):
         return False
     cfg_path = os.path.join(path, "config.json")
@@ -174,7 +174,7 @@ def is_encodeid_checkpoint(path: str) -> bool:
     try:
         with open(cfg_path, "r") as f:
             cfg = json.load(f)
-        return cfg.get("model_type") == "encode_id"
+        return cfg.get("model_type") == "nearid"
     except Exception:
         return False
 
@@ -201,10 +201,10 @@ def _read_wandb_id(model_path: str) -> str:
     return ""
 
 
-def shorten_model_tag(model_path: str, is_encodeid: bool = False) -> str:
+def shorten_model_tag(model_path: str, is_nearid: bool = False) -> str:
     """Produce a short, filesystem-safe model identifier for output filenames.
 
-    For EncodeID checkpoints like:
+    For NearID checkpoints like:
       runs/trains/runs/SigLIP2_MAPInfoNCEExt/CLIPID-...-260301-070712/checkpoint-3300
     returns: "MAPInfoNCEExt~3300"
 
@@ -215,7 +215,7 @@ def shorten_model_tag(model_path: str, is_encodeid: bool = False) -> str:
     For HuggingFace model IDs like "google/siglip2-so400m-patch14-384":
     returns: "google~siglip2-so400m-patch14-384" (original behaviour)
     """
-    if is_encodeid:
+    if is_nearid:
         parts = model_path.rstrip("/").split("/")
         # Find checkpoint-N part
         ckpt_step = ""
@@ -409,11 +409,11 @@ class SigLIP2SimilarityCalculator:
 
 
 # -----------------------------------------------------------------------------
-# EncodeID similarity calculator (trained checkpoint)
+# NearID similarity calculator (trained checkpoint)
 # -----------------------------------------------------------------------------
 
-class EncodeIDSimilarityCalculator:
-    """Drop-in calculator for EncodeID trained checkpoints.
+class NearIDSimilarityCalculator:
+    """Drop-in calculator for NearID trained checkpoints.
     
     Duck-types with SigLIP2SimilarityCalculator: exposes .processor, .device,
     .dtype, and .encode_pixel_values(pixel_values) -> normalized embeddings.
@@ -427,14 +427,14 @@ class EncodeIDSimilarityCalculator:
     ):
         if not ENCODEID_AVAILABLE:
             raise ImportError(
-                "EncodeID dependencies not available. "
+                "NearID dependencies not available. "
                 "Ensure src/ contains models_dist.py, models.py, config.py."
             )
 
         self.device = device or ("cuda" if torch.cuda.is_available() else "cpu")
 
-        print(f"Loading EncodeID checkpoint from {checkpoint_path} on {self.device} ...")
-        self.model = EncodeIDModel.from_pretrained(
+        print(f"Loading NearID checkpoint from {checkpoint_path} on {self.device} ...")
+        self.model = NearIDModel.from_pretrained(
             checkpoint_path, trust_remote_code=True
         )
         self.model.to(device=self.device)  # type: ignore
@@ -1858,8 +1858,8 @@ if __name__ == "__main__":
     # parser.add_argument("--masks", action="store_true")
     parser.add_argument("--masks", type=str2bool, nargs="?", const=True, default=False)
     parser.add_argument("--mask_keep", type=str, default="foreground", choices=["foreground", "background"])
-    parser.add_argument("--ds_neg", type=str, default="./data/EncodeID/EncodeID-Flux") # prior: default="Aleksandar/SynCDIntraNeg"
-    parser.add_argument("--ds", type=str, default="Aleksandar/EncodeID") # prior: default="Aleksandar/SynCD"
+    parser.add_argument("--ds_neg", type=str, default="./data/NearID/NearID-Flux") # prior: default="Aleksandar/SynCDIntraNeg"
+    parser.add_argument("--ds", type=str, default="Aleksandar/NearID") # prior: default="Aleksandar/SynCD"
     parser.add_argument("--split", type=str, default="train")
     
 
@@ -1899,10 +1899,10 @@ if __name__ == "__main__":
     # if model is VSM, then we use that specific calculator
     _VSM_mode = "vsm" in args.model.lower()
 
-    # Auto-detect EncodeID checkpoint (local dir with config.json model_type=encode_id)
+    # Auto-detect NearID checkpoint (local dir with config.json model_type=nearid)
     _encodeid_mode = is_encodeid_checkpoint(args.model)
     if _encodeid_mode:
-        print(f"[NOTICE] Detected EncodeID checkpoint at: {args.model}")
+        print(f"[NOTICE] Detected NearID checkpoint at: {args.model}")
 
     findx_tag = None
     if args.findx:
@@ -1985,7 +1985,7 @@ if __name__ == "__main__":
         elif _VSM_mode:
             calc = VSMCalculator(semantic_threshold=0.6)
         elif _encodeid_mode:
-            calc = EncodeIDSimilarityCalculator(checkpoint_path=args.model)
+            calc = NearIDSimilarityCalculator(checkpoint_path=args.model)
         else:
             calc = SigLIP2SimilarityCalculator(model_id=args.model, dtype=torch.float16)
 
@@ -2068,8 +2068,8 @@ if __name__ == "__main__":
         )
     else:
         if _encodeid_mode:
-            print(f"\nUsing EncodeID embedding mode with {args.model}")
-            calc = EncodeIDSimilarityCalculator(checkpoint_path=args.model)
+            print(f"\nUsing NearID embedding mode with {args.model}")
+            calc = NearIDSimilarityCalculator(checkpoint_path=args.model)
         else:
             print(f"\nUsing embedding similarity mode with {args.model}")
             calc = SigLIP2SimilarityCalculator(model_id=args.model, dtype=torch.float16)

@@ -120,7 +120,7 @@ See [docs/TRAINING.md](docs/TRAINING.md) for the full guide.
 # Step 1: compute similarities
 python -m evaluation.sim_test \
     --mode fullneg --model "Aleksandar/nearid-siglip2" \
-    --ds "Aleksandar/EncodeID" --ds_neg "path/to/negatives" \
+    --ds "Aleksandar/NearID" --ds_neg "path/to/negatives" \
     --output_folder runs/evals/ --batch_size 64
 
 # Step 2: aggregate tables

@@ -6,8 +6,8 @@ disc_m_sim_vs_crossii_bidir, then calls export_qwen_reference_table_fixed_method
 for every group in COMMON_METHOD_TAGS.
 
 Loads from two roots:
-  - root         (EncodeID5R): trained encodeid checkpoints + VSM
-  - baseline_root (EncodeID5): frozen baselines (CLIP, SigLIP2, DINOv2, Qwen3-VL*)
+  - root         (NearID5R): trained encodeid checkpoints + VSM
+  - baseline_root (NearID5): frozen baselines (CLIP, SigLIP2, DINOv2, Qwen3-VL*)
 
 Models present in root take priority; baseline_root fills in any model not already loaded.
 
@@ -22,7 +22,7 @@ Column mapping (paper ↔ code):
 Usage
 -----
     python scripts/gen_min.py --overlap primary
-    python scripts/gen_min.py --root ./runs/evals/EncodeID5R --baseline_root ./runs/evals/EncodeID5 --overlap primary
+    python scripts/gen_min.py --root ./runs/evals/NearID5R --baseline_root ./runs/evals/NearID5 --overlap primary
     python scripts/gen_min.py --out_path outputs/tables_min --overlap primary
 """
 
@@ -67,8 +67,8 @@ def _load_and_fix(root: str, split: str, mode: str, verbose: bool) -> pd.DataFra
 
 
 def main(
-    root:          str  = "./runs/evals/EncodeID5R",
-    baseline_root: str  = "./runs/evals/EncodeID5",
+    root:          str  = "./runs/evals/NearID5R",
+    baseline_root: str  = "./runs/evals/NearID5",
     split:         str  = "testall",
     mode:          str  = "fullneg",
     out_path:      str  = "outputs/tables_min",
