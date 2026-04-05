@@ -163,6 +163,8 @@ negatives = load_dataset("Aleksandar/NearID-Flux")
 @article{cvejic2026nearid,
   title={NearID: Identity Representation Learning via Near-identity Distractors},
   author={Cvejic, Aleksandar and Abdal, Rameen and Eldesokey, Abdelrahman and Ghanem, Bernard and Wonka, Peter},
+  journal={arXiv preprint arXiv:2604.01973},
+  year={2026}
 }
 ```
 
