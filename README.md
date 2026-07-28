@@ -1,6 +1,6 @@
 # NearID Project Website
 
-This branch hosts the project website for [NearID: Identity Representation Learning via Near-identity Distractors](https://github.com/Gorluxor/NearID).
+This branch hosts the project website for [NearID: Identity Representation Learning via Near-identity Distractors](https://github.com/Gorluxor/NearID), **accepted to ECCV 2026**.
 
 The website is deployed via GitHub Pages.
 
