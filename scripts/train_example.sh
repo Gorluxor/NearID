@@ -18,7 +18,8 @@ CUDA_VISIBLE_DEVICES=0 accelerate launch -m training.train \
     --epochs 11 \
     --data.batch_size 128 \
     --data.train_path "Aleksandar/NearID" \
-    --data.neg_paths "[path/to/neg_source_1,path/to/neg_source_2]" \
+    --data.neg_paths "[Aleksandar/NearID-Flux,Aleksandar/NearID-SDXL,Aleksandar/NearID-Qwen,Aleksandar/NearID-PowerPaint]" \
+    --data.train_indices_path "splits/train.json" \
     --data.val_indices_path "splits/val.json" \
     --data.test_indices_path "splits/test.json" \
     --data.mtg_train_path "abdo-eldesokey/mtg-dataset" \

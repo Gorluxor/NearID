@@ -1,29 +1,25 @@
-"""
-gen_min.py — MCN disc_bidir tables: SSRm / PA pooled per COMMON_METHOD_TAGS group.
+"""Pool near-identity discrimination results into SSR / PA tables.
 
-Mirrors generate_tables.py load/fix/summarize pipeline but computes only
-disc_m_sim_vs_crossii_bidir, then calls export_qwen_reference_table_fixed_methods_pooled
-for every group in COMMON_METHOD_TAGS.
+Computes disc_m_sim_vs_crossii_bidir from the per-sample similarity CSVs written
+by evaluation.sim_test, then exports one pooled table per group in
+COMMON_METHOD_TAGS. Table 1 of the paper is the `full` mask row of the `all`
+group (seven distractor sources, n=3500).
 
-Loads from two roots:
-  - root         (NearID5R): trained encodeid checkpoints + VSM
-  - baseline_root (NearID5): frozen baselines (CLIP, SigLIP2, DINOv2, Qwen3-VL*)
+Results are read from one or two roots. Models found in `root` take priority;
+`baseline_root` fills in any model not already loaded, which is convenient when
+trained checkpoints and frozen baselines were evaluated into separate folders.
 
-Models present in root take priority; baseline_root fills in any model not already loaded.
-
-Column mapping (paper ↔ code):
+Column mapping (paper <-> code):
   Paper "SSR" = code SSRm  (AND-based: ALL pairwise margins must be positive)
   Paper "PA"  = code PA    (pooled pairwise accuracy: wins / trials across margins)
 
-  Code "SSR" (OR-based: ANY margin positive) is exported for reference
-  but is NOT used in the paper. It was mistakenly used for the paper's PA
-  column during initial submission — the correct metric is code PA.
+  Code "SSR" (OR-based: ANY margin positive) is exported for reference but is
+  NOT the reported metric.
 
 Usage
 -----
-    python scripts/gen_min.py --overlap primary
-    python scripts/gen_min.py --root ./runs/evals/NearID5R --baseline_root ./runs/evals/NearID5 --overlap primary
-    python scripts/gen_min.py --out_path outputs/tables_min --overlap primary
+    python -m evaluation.gen_tables --root ./runs/evals/ --overlap primary
+    python -m evaluation.gen_tables --root ./runs/evals/ --out_path outputs/tables --overlap primary
 """
 
 import os
@@ -67,8 +63,8 @@ def _load_and_fix(root: str, split: str, mode: str, verbose: bool) -> pd.DataFra
 
 
 def main(
-    root:          str  = "./runs/evals/NearID5R",
-    baseline_root: str  = "./runs/evals/NearID5",
+    root:          str  = "./runs/evals",
+    baseline_root: str  = None,  # type:ignore  # optional second root; see docstring
     split:         str  = "testall",
     mode:          str  = "fullneg",
     out_path:      str  = "outputs/tables_min",
@@ -100,7 +96,7 @@ def main(
     # ------------------------------------------------------------------
     # 2. Load baseline root (CLIP, SigLIP2, DINOv2, Qwen3-VL*, VSM)
     # ------------------------------------------------------------------
-    df_baseline = _load_and_fix(baseline_root, split, mode, verbose)
+    df_baseline = _load_and_fix(baseline_root, split, mode, verbose) if baseline_root else None
 
     if df_baseline is not None:
         baseline_models = set(df_baseline["sim_model"].unique())

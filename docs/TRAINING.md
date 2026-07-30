@@ -9,7 +9,7 @@
    pip install -e ".[train]"
    ```
 
-2. **Data:** The NearID dataset is loaded from HuggingFace Hub (`Aleksandar/NearID`). Negative source datasets should be provided as HuggingFace dataset paths or local directories.
+2. **Data:** The NearID dataset is loaded from HuggingFace Hub (`Aleksandar/NearID`). Distractor sources are given as HuggingFace repo ids (or local directories) and must be index-aligned with the positives — all released sources are. The official split index files live in [`splits/`](../splits); see [`splits/README.md`](../splits/README.md).
 
 3. **Hardware:** Single NVIDIA A100 GPU (or equivalent with 40GB+ VRAM). The model trains with mixed precision (fp16) and uses ~15M trainable parameters.
 
@@ -28,7 +28,8 @@ CUDA_VISIBLE_DEVICES=0 accelerate launch -m training.train \
     --epochs 11 \
     --data.batch_size 128 \
     --data.train_path "Aleksandar/NearID" \
-    --data.neg_paths "[path/to/neg_source_1,path/to/neg_source_2]" \
+    --data.neg_paths "[Aleksandar/NearID-Flux,Aleksandar/NearID-SDXL,Aleksandar/NearID-Qwen,Aleksandar/NearID-PowerPaint]" \
+    --data.train_indices_path "splits/train.json" \
     --data.val_indices_path "splits/val.json" \
     --data.test_indices_path "splits/test.json" \
     --data.mtg_train_path "abdo-eldesokey/mtg-dataset" \
@@ -86,8 +87,8 @@ After training, convert the NearID checkpoint to the clean NearID format for rel
 
 ```bash
 python -m training.convert_checkpoint \
-    --input_path ./runs/trains/checkpoint-3300 \
-    --output_path ./nearid_release \
+    --checkpoint ./runs/trains/checkpoint-3300 \
+    --output ./nearid_release \
     --verify
 ```
 

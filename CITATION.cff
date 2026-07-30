@@ -9,7 +9,7 @@ authors:
     affiliation: "King Abdullah University of Science and Technology (KAUST)"
   - family-names: Abdal
     given-names: Rameen
-    affiliation: "Snap Inc."
+    affiliation: "Snap Research"
   - family-names: Eldesokey
     given-names: Abdelrahman
     affiliation: "King Abdullah University of Science and Technology (KAUST)"
@@ -21,3 +21,26 @@ authors:
     affiliation: "King Abdullah University of Science and Technology (KAUST)"
 repository-code: "https://github.com/Gorluxor/NearID"
 url: "https://gorluxor.github.io/NearID"
+
+# Cite the paper, not the software, when the two differ.
+preferred-citation:
+  type: conference-paper
+  title: "NearID: Identity Representation Learning via Near-identity Distractors"
+  year: 2026
+  collection-title: "Proceedings of the European Conference on Computer Vision (ECCV)"
+  authors:
+    - family-names: Cvejic
+      given-names: Aleksandar
+      affiliation: "King Abdullah University of Science and Technology (KAUST)"
+    - family-names: Abdal
+      given-names: Rameen
+      affiliation: "Snap Research"
+    - family-names: Eldesokey
+      given-names: Abdelrahman
+      affiliation: "King Abdullah University of Science and Technology (KAUST)"
+    - family-names: Ghanem
+      given-names: Bernard
+      affiliation: "King Abdullah University of Science and Technology (KAUST)"
+    - family-names: Wonka
+      given-names: Peter
+      affiliation: "King Abdullah University of Science and Technology (KAUST)"

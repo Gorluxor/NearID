@@ -24,7 +24,7 @@ CUDA_VISIBLE_DEVICES=0 python -m evaluation.sim_test \
     --mode fullneg \
     --model "Aleksandar/nearid-siglip2" \
     --ds "Aleksandar/NearID" \
-    --ds_neg "path/to/negative_source" \
+    --ds_neg "Aleksandar/NearID-Flux" \
     --split train \
     --findx "splits/test.json" \
     --output_folder "runs/evals/" \
@@ -35,7 +35,7 @@ CUDA_VISIBLE_DEVICES=0 python -m evaluation.sim_test \
     --mode fullneg \
     --model "./runs/trains/checkpoint-3300" \
     --ds "Aleksandar/NearID" \
-    --ds_neg "path/to/negative_source" \
+    --ds_neg "Aleksandar/NearID-Flux" \
     --split train \
     --findx "splits/test.json" \
     --output_folder "runs/evals/" \
@@ -93,12 +93,17 @@ This generates LaTeX tables and CSVs under `outputs/tables/`.
 
 ## DreamBench++ Evaluation
 
-For human-alignment evaluation on DreamBench++, follow the setup in the [DreamBench++ repository](https://github.com/peng-navi/dreambench-plus):
+The per-image rating files are included in this repository, so the MH correlation
+runs on CPU in seconds with no downloads:
 
 ```bash
-cd thirdparty/dreambench_plus
-python dreambench_plus/pearson.py
+python -m dreambench_plus.pearson
 ```
+
+Expected `NearID` / `Average` = **0.545**. See
+[dreambench_plus/README.md](../dreambench_plus/README.md) for the full table, the
+per-category breakdown, and how to re-score a different checkpoint against the
+DreamBench++ generated images.
 
 ## Expected Results (Table 1)
 

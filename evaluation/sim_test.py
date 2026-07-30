@@ -164,15 +164,28 @@ def is_vlm_model(model_id: str) -> bool:
     return False
 
 
-def is_encodeid_checkpoint(path: str) -> bool:
-    """Detect if path is a local NearID checkpoint (has config.json with model_type='nearid')."""
-    if not os.path.isdir(path):
-        return False
-    cfg_path = os.path.join(path, "config.json")
-    if not os.path.isfile(cfg_path):
-        return False
+def is_nearid_checkpoint(path: str) -> bool:
+    """Detect a NearID checkpoint (config.json with model_type='nearid').
+
+    Accepts both a local checkpoint directory and a HuggingFace Hub repo id
+    such as "Aleksandar/nearid-siglip2".
+    """
+    if os.path.isdir(path):
+        cfg_path = os.path.join(path, "config.json")
+        if not os.path.isfile(cfg_path):
+            return False
+        try:
+            with open(cfg_path, "r") as f:
+                cfg = json.load(f)
+            return cfg.get("model_type") == "nearid"
+        except Exception:
+            return False
+
+    # Hub repo id: fetch config.json only
     try:
-        with open(cfg_path, "r") as f:
+        from huggingface_hub import hf_hub_download
+
+        with open(hf_hub_download(path, "config.json"), "r") as f:
             cfg = json.load(f)
         return cfg.get("model_type") == "nearid"
     except Exception:
@@ -186,7 +199,7 @@ def _read_wandb_id(model_path: str) -> str:
     Returns the W&B ID string, or "" if not found.
     """
     parts = model_path.rstrip("/").split("/")
-    # Walk up from checkpoint-* to the CLIPID-* run dir
+    # Walk up from checkpoint-* to the run directory
     for i, p in enumerate(parts):
         if p.startswith("checkpoint-"):
             run_dir = os.path.join(*parts[:i]) if i > 0 else "."
@@ -201,19 +214,21 @@ def _read_wandb_id(model_path: str) -> str:
     return ""
 
 
+# Prefix of run directories created by training.train (runner_name_from_cfg).
+RUN_PREFIX = "NearID"
+
+
 def shorten_model_tag(model_path: str, is_nearid: bool = False) -> str:
     """Produce a short, filesystem-safe model identifier for output filenames.
 
-    For NearID checkpoints like:
-      runs/trains/runs/SigLIP2_MAPInfoNCEExt/CLIPID-...-260301-070712/checkpoint-3300
-    returns: "MAPInfoNCEExt~3300"
+    For the released model:
+      "Aleksandar/nearid-siglip2"  ->  "Aleksandar~nearid-siglip2"
 
-    When multiple runs share the same experiment folder (e.g. different lr),
-    appends the run timestamp to disambiguate:
-      "MAPInfoNCEExt~3300_260301-070712"
-
-    For HuggingFace model IDs like "google/siglip2-so400m-patch14-384":
-    returns: "google~siglip2-so400m-patch14-384" (original behaviour)
+    For a local training checkpoint, training.train writes run directories named
+      <output_dir>/NearID-<backbone>-head_only-loss<...>-lr<...>-Nneg<n>-V<n>-T<n>-<YYMMDD-HHMMSS>/checkpoint-<step>
+    which yields a tag of the form "loss<...>~<step>", plus the run timestamp when
+    more than one run shares the parent directory (otherwise different learning
+    rates would collide onto the same CSV filename).
     """
     if is_nearid:
         parts = model_path.rstrip("/").split("/")
@@ -223,43 +238,40 @@ def shorten_model_tag(model_path: str, is_nearid: bool = False) -> str:
             if p.startswith("checkpoint-"):
                 ckpt_step = p.replace("checkpoint-", "")
                 break
-        # Find the experiment folder (e.g. SigLIP2_MAPInfoNCEExt)
-        # Convention: it's the parent of the CLIPID-* run folder
+
+        # Locate the run directory produced by training.train (see
+        # run_suffix_from_cfg there). Everything after the loss descriptor is
+        # hyperparameters and a timestamp, so keep the loss part as the name.
+        run_idx = -1
         exp_name = ""
-        exp_folder_idx = -1
+        run_ts = ""
         for i, p in enumerate(parts):
-            if p.startswith("SigLIP2_"):
-                exp_name = p.replace("SigLIP2_", "")
-                exp_folder_idx = i
+            if p.startswith(f"{RUN_PREFIX}-"):
+                run_idx = i
+                segs = p.split("-")
+                loss_segs = [s for s in segs if s.startswith("loss")]
+                exp_name = loss_segs[0][:60] if loss_segs else p[:60]
+                # Timestamp is the trailing YYMMDD-HHMMSS pair.
+                if len(segs) >= 2 and segs[-1].isdigit() and segs[-2].isdigit():
+                    run_ts = f"{segs[-2]}-{segs[-1]}"
                 break
+
         if not exp_name:
-            # Fallback: use last non-checkpoint directory component
+            # Fallback: last non-checkpoint directory component.
             for p in reversed(parts):
                 if not p.startswith("checkpoint-"):
                     exp_name = p[:60]  # cap length
                     break
 
-        # Extract run timestamp from CLIPID-* folder for disambiguation.
-        # Multiple runs under the same experiment folder (e.g. different lr)
-        # would otherwise produce identical tags and overwrite each other's CSVs.
-        run_ts = ""
-        for p in parts:
-            if p.startswith("CLIPID-"):
-                # Timestamp is the last hyphen-separated segment(s): e.g. "260301-070712"
-                segs = p.split("-")
-                if len(segs) >= 2:
-                    run_ts = f"{segs[-2]}-{segs[-1]}"
-                break
-
         tag = f"{exp_name}~{ckpt_step}" if ckpt_step else exp_name
 
-        # Check if the experiment folder has multiple CLIPID-* run subdirectories.
-        # If so, append the run timestamp to prevent filename collisions.
-        if exp_folder_idx >= 0:
-            exp_folder = os.path.join(*parts[:exp_folder_idx + 1])
-            if os.path.isdir(exp_folder):
-                run_dirs = [d for d in os.listdir(exp_folder) if d.startswith("CLIPID-")]
-                if len(run_dirs) > 1 and run_ts:
+        # If the parent directory holds several runs, append the timestamp so
+        # their CSVs cannot overwrite one another.
+        if run_idx > 0 and run_ts:
+            parent = os.path.join(*parts[:run_idx])
+            if os.path.isdir(parent):
+                siblings = [d for d in os.listdir(parent) if d.startswith(f"{RUN_PREFIX}-")]
+                if len(siblings) > 1:
                     tag = f"{tag}_{run_ts}"
 
         # Log W&B ID if available (for traceability)
@@ -428,7 +440,7 @@ class NearIDSimilarityCalculator:
         if not ENCODEID_AVAILABLE:
             raise ImportError(
                 "NearID dependencies not available. "
-                "Ensure src/ contains models_dist.py, models.py, config.py."
+                "Ensure the training package is importable (training/models.py, training/config.py)."
             )
 
         self.device = device or ("cuda" if torch.cuda.is_available() else "cpu")
@@ -440,12 +452,22 @@ class NearIDSimilarityCalculator:
         self.model.to(device=self.device)  # type: ignore
         self.model.eval()
 
-        # Match precision to encoder weights
-        self.dtype = next(self.model.encoder_wrapper.parameters()).dtype
-        self.processor = self.model.processor
+        # Two NearIDModel flavours share this calculator:
+        #   - training checkpoints expose .encoder_wrapper and .processor
+        #   - the released Hub model exposes .backbone and .get_image_features()
+        self.released_api = not hasattr(self.model, "encoder_wrapper")
 
-        head_out = self.model.config.head_out_dim
-        backbone = self.model.config.backbone
+        if self.released_api:
+            from transformers import AutoImageProcessor
+
+            self.dtype = next(self.model.backbone.parameters()).dtype
+            self.processor = AutoImageProcessor.from_pretrained(checkpoint_path)
+        else:
+            self.dtype = next(self.model.encoder_wrapper.parameters()).dtype
+            self.processor = self.model.processor
+
+        head_out = getattr(self.model.config, "head_out_dim", None)
+        backbone = getattr(self.model.config, "backbone", "siglip2")
 
         # Read persisted W&B run ID for traceability
         self.wandb_id = _read_wandb_id(checkpoint_path)
@@ -457,7 +479,10 @@ class NearIDSimilarityCalculator:
         pixel_values = pixel_values.to(self.device, dtype=self.dtype)
         device_type = self.device if isinstance(self.device, str) else str(self.device).split(":")[0]
         with torch.autocast(device_type=device_type, dtype=self.dtype):
-            out = self.model({"pixel_values_anchor": pixel_values}, side="anchor")
+            if self.released_api:
+                out = self.model.get_image_features(pixel_values=pixel_values, normalize=False)
+            else:
+                out = self.model({"pixel_values_anchor": pixel_values}, side="anchor")
         out = out / (out.norm(p=2, dim=-1, keepdim=True) + 1e-6)
         return out
 
@@ -473,7 +498,7 @@ class VSMCalculator:
         if not VSM_AVAILABLE:
             raise ImportError(
                 "Mind-the-Glitch dependencies not available. "
-                "Ensure thirdparty/mind-the-glitch is set up correctly."
+                "Install Mind-the-Glitch (github.com/abdo-eldesokey/mind-the-glitch) and put it on PYTHONPATH."
             )
 
         from pathlib import Path
@@ -1858,8 +1883,10 @@ if __name__ == "__main__":
     # parser.add_argument("--masks", action="store_true")
     parser.add_argument("--masks", type=str2bool, nargs="?", const=True, default=False)
     parser.add_argument("--mask_keep", type=str, default="foreground", choices=["foreground", "background"])
-    parser.add_argument("--ds_neg", type=str, default="./data/NearID/NearID-Flux") # prior: default="Aleksandar/SynCDIntraNeg"
-    parser.add_argument("--ds", type=str, default="Aleksandar/NearID") # prior: default="Aleksandar/SynCD"
+    parser.add_argument("--ds_neg", type=str, default="Aleksandar/NearID-Flux",
+                        help="Near-identity distractor source: HF repo id or local path")
+    parser.add_argument("--ds", type=str, default="Aleksandar/NearID",
+                        help="Positives dataset: HF repo id or local path")
     parser.add_argument("--split", type=str, default="train")
     
 
@@ -1900,8 +1927,8 @@ if __name__ == "__main__":
     _VSM_mode = "vsm" in args.model.lower()
 
     # Auto-detect NearID checkpoint (local dir with config.json model_type=nearid)
-    _encodeid_mode = is_encodeid_checkpoint(args.model)
-    if _encodeid_mode:
+    _nearid_mode = is_nearid_checkpoint(args.model)
+    if _nearid_mode:
         print(f"[NOTICE] Detected NearID checkpoint at: {args.model}")
 
     findx_tag = None
@@ -1914,8 +1941,8 @@ if __name__ == "__main__":
     ds_neg_folder = "MTG-Dataset" if args.mode == "mtg" else os.path.basename(args.ds_neg.rstrip("/"))
     _mask = "image" if not args.masks else args.mask_keep
     _max = "" if args.mode == "mtg" else ("all" if args.max_samples is None else str(args.max_samples))
-    _method = "_vlm" if args.vlm else "_vsm" if _VSM_mode else "_encodeid" if _encodeid_mode else ""
-    _model_tag = shorten_model_tag(args.model, is_encodeid=_encodeid_mode)
+    _method = "_vlm" if args.vlm else "_vsm" if _VSM_mode else "_encodeid" if _nearid_mode else ""
+    _model_tag = shorten_model_tag(args.model, is_nearid=_nearid_mode)
     _base = args.output.split(".csv")[0] if args.output else "sims"
     _base = _base + f"{_method}_{_mask}_{split_tag}{_max}_{args.mode}_{_model_tag}"
     output_file = os.path.join(args.output_folder, ds_neg_folder, f"{_base}.csv")
@@ -1925,7 +1952,7 @@ if __name__ == "__main__":
         print(f"Loading dataset from: {args.ds} (neg: {args.ds_neg})")
 
     # Read training W&B ID if available (for cross-referencing eval → training run)
-    _train_wandb_id = _read_wandb_id(args.model) if _encodeid_mode else ""
+    _train_wandb_id = _read_wandb_id(args.model) if _nearid_mode else ""
     if _train_wandb_id:
         print(f"Training W&B ID: {_train_wandb_id}")
 
@@ -1984,7 +2011,7 @@ if __name__ == "__main__":
             )
         elif _VSM_mode:
             calc = VSMCalculator(semantic_threshold=0.6)
-        elif _encodeid_mode:
+        elif _nearid_mode:
             calc = NearIDSimilarityCalculator(checkpoint_path=args.model)
         else:
             calc = SigLIP2SimilarityCalculator(model_id=args.model, dtype=torch.float16)
@@ -2067,7 +2094,7 @@ if __name__ == "__main__":
             run=run,
         )
     else:
-        if _encodeid_mode:
+        if _nearid_mode:
             print(f"\nUsing NearID embedding mode with {args.model}")
             calc = NearIDSimilarityCalculator(checkpoint_path=args.model)
         else:

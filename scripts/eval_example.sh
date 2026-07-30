@@ -1,40 +1,53 @@
 #!/usr/bin/env bash
-# NearID evaluation example
+# NearID evaluation example — reproduces the NearID SSR / PA columns of Table 1.
 #
-# Step 1: Compute per-sample similarities (generates CSV)
-# Step 2: Aggregate into pooled SSR/PA tables
+# Everything is pulled from the HuggingFace Hub; no local dataset copies needed.
 #
 # Prerequisites:
 #   conda env create -f environment.yaml
 #   conda activate nearid
 #   pip install -e ".[eval]"
+set -euo pipefail
 
-# --- Step 1: Similarity computation ---
-# Using the released HuggingFace model:
-CUDA_VISIBLE_DEVICES=0 python -m evaluation.sim_test \
-    --mode fullneg \
-    --model "Aleksandar/nearid-siglip2" \
-    --ds "Aleksandar/NearID" \
-    --ds_neg "path/to/negative_source" \
-    --split train \
-    --findx "splits/test.json" \
-    --output_folder "runs/evals/" \
-    --batch_size 64
+MODEL="Aleksandar/nearid-siglip2"   # or a local checkpoint dir, e.g. ./runs/trains/checkpoint-3300
+GPU="${CUDA_VISIBLE_DEVICES:-0}"
 
-# Or using a local training checkpoint:
-# CUDA_VISIBLE_DEVICES=0 python -m evaluation.sim_test \
-#     --mode fullneg \
-#     --model "./runs/trains/checkpoint-3300" \
-#     --ds "Aleksandar/NearID" \
-#     --ds_neg "path/to/negative_source" \
-#     --split train \
-#     --findx "splits/test.json" \
-#     --output_folder "runs/evals/" \
-#     --batch_size 64
+# The seven distractor sources pooled for Table 1. FluxC / FluxC_1024 are held
+# out of the reported average (see docs/EVALUATION.md).
+SOURCES=(
+    "Aleksandar/NearID-Flux"
+    "Aleksandar/NearID-Flux_1024"
+    "Aleksandar/NearID-Qwen"
+    "Aleksandar/NearID-Qwen_1328"
+    "Aleksandar/NearID-PowerPaint"
+    "Aleksandar/NearID-SDXL"
+    "Aleksandar/NearID-SDXL_1024"
+)
 
-# --- Step 2: Table aggregation ---
+# --- Step 1: per-sample similarities, one CSV per distractor source ---
+for SRC in "${SOURCES[@]}"; do
+    echo "=== $SRC ==="
+    CUDA_VISIBLE_DEVICES="$GPU" python -m evaluation.sim_test \
+        --mode fullneg \
+        --model "$MODEL" \
+        --ds "Aleksandar/NearID" \
+        --ds_neg "$SRC" \
+        --split train \
+        --findx "splits/test.json" \
+        --output_folder "runs/evals/" \
+        --batch_size 64
+done
+
+# --- Step 2: pool into SSR / PA tables ---
 python -m evaluation.gen_tables \
     --root "./runs/evals/" \
     --split testall \
     --out_path "outputs/tables" \
     --overlap primary
+
+# --- Step 3 (optional): MTG part-level discrimination + oracle alignment ---
+CUDA_VISIBLE_DEVICES="$GPU" python -m evaluation.sim_test \
+    --mode mtg \
+    --model "$MODEL" \
+    --output_folder "runs/evals/" \
+    --batch_size 64

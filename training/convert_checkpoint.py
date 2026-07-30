@@ -3,8 +3,8 @@
 
 Usage::
 
-    python nearid/convert_checkpoint.py \
-        --checkpoint runs/trains/runs/SigLIP2_MAPInfoNCEExt/CLIPID-...-260301-070712/checkpoint-3300 \
+    python -m training.convert_checkpoint \
+        --checkpoint ./runs/trains/NearID-siglip2-head_only-lossinfonce_ext1.0-lr1.00e-04-Nneg4-V2-T2-<timestamp>/checkpoint-3300 \
         --output nearid/weights \
         --verify
 """
@@ -114,12 +114,9 @@ def verify(output_dir: str, checkpoint_dir: str) -> None:
     """Load both models, run a forward pass, compare embeddings."""
     import sys
 
-    # Add src/ to path for NearIDModel
-    src_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "src")
-    sys.path.insert(0, src_dir)
-
-    from config import NearIDConfig
-    from models_dist import NearIDModel
+    # The training-side NearIDModel (distinct from the released
+    # nearid/modeling_nearid.py class of the same name — see note in that file).
+    from training.models import NearIDModel  # noqa: F401
 
     device = "cuda" if torch.cuda.is_available() else "cpu"
 

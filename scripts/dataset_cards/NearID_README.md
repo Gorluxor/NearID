@@ -7,26 +7,61 @@ dataset_info:
       dtype: string
     - name: category_description
       dtype: string
-    - name: img1
+    - name: images1
       dtype: image
-    - name: img2
+    - name: images2
       dtype: image
-    - name: img3
+    - name: images3
+      dtype: image
+    - name: masks1
+      dtype: image
+    - name: masks2
+      dtype: image
+    - name: masks3
       dtype: image
     - name: n_images
       dtype: int64
     - name: objaverse_id
       dtype: string
+    - name: dino_01
+      dtype: float64
+    - name: dino_02
+      dtype: float64
+    - name: dino_12
+      dtype: float64
+    - name: aesthetics1
+      dtype: float64
+    - name: aesthetics2
+      dtype: float64
+    - name: aesthetics3
+      dtype: float64
+    - name: size1
+      sequence: int64
+    - name: size2
+      sequence: int64
+    - name: size3
+      sequence: int64
     - name: prompts1
       dtype: string
     - name: prompts2
       dtype: string
     - name: prompts3
       dtype: string
+    - name: filenames1
+      dtype: string
+    - name: filenames2
+      dtype: string
+    - name: filenames3
+      dtype: string
     - name: quality
+      dtype: string
+    - name: id_safe
+      dtype: bool
+    - name: split
       dtype: string
   splits:
     - name: train
+      num_examples: 19386
 task_categories:
   - image-classification
   - image-to-image
@@ -46,7 +81,7 @@ size_categories:
 
 # NearID — Multi-View Identity Dataset
 
-[![Model](https://img.shields.io/badge/Model-nearid--siglip2-blue)](https://huggingface.co/Aleksandar/nearid-siglip2) [![Paper](https://img.shields.io/badge/arXiv-XXXX.XXXXX-b31b1b)](https://arxiv.org/abs/XXXX.XXXXX) [![Project Page](https://img.shields.io/badge/🌐-Project_Page-blue)](https://gorluxor.github.io/NearID/) [![GitHub](https://img.shields.io/badge/GitHub-Repository-black?logo=github)](https://github.com/Gorluxor/NearID) [![KAUST](https://img.shields.io/badge/KAUST-009B4D)](https://www.kaust.edu.sa/) [![Snap Research](https://img.shields.io/badge/Snap_Research-FFFC00?logoColor=black)](https://research.snap.com/)
+[![Model](https://img.shields.io/badge/Model-nearid--siglip2-blue)](https://huggingface.co/Aleksandar/nearid-siglip2) [![Paper](https://img.shields.io/badge/arXiv-2604.01973-b31b1b)](https://arxiv.org/abs/2604.01973) [![Project Page](https://img.shields.io/badge/🌐-Project_Page-blue)](https://gorluxor.github.io/NearID/) [![GitHub](https://img.shields.io/badge/GitHub-Repository-black?logo=github)](https://github.com/Gorluxor/NearID) [![KAUST](https://img.shields.io/badge/KAUST-009B4D)](https://www.kaust.edu.sa/) [![Snap Research](https://img.shields.io/badge/Snap_Research-FFFC00?logoColor=black)](https://research.snap.com/)
 
 This is the **base positives dataset** for the [NearID](https://huggingface.co/Aleksandar/nearid-siglip2) project. Each sample contains multiple views of the **same identity** rendered in different backgrounds/contexts.
 
@@ -71,7 +106,9 @@ neg = load_dataset("Aleksandar/NearID-Flux")
 | `id` | int64 | Sample ID (shared across all NearID datasets) |
 | `category` | string | Object category |
 | `category_description` | string | Natural language description of the identity |
-| `img1`, `img2`, `img3` | image | Multi-view images of the same identity in different contexts |
+| `images1`, `images2`, `images3` | image | Multi-view images of the same identity in different contexts |
+| `masks1`, `masks2`, `masks3` | image | Foreground object masks, aligned with each view |
+| `split` | string | Official split: `train` (18,786), `val` (100), `test` (500) |
 | `n_images` | int64 | Number of valid views |
 | `objaverse_id` | string | Source Objaverse object identifier |
 | `prompts1`–`prompts3` | string | Generation prompts for each view |
@@ -95,7 +132,7 @@ neg = load_dataset("Aleksandar/NearID-Flux")
 ## Related
 
 - **Model:** [Aleksandar/nearid-siglip2](https://huggingface.co/Aleksandar/nearid-siglip2) — NearID identity embedding model
-- **Paper:** [NearID: Identity Representation Learning via Near-identity Distractors](https://arxiv.org/abs/XXXX.XXXXX)
+- **Paper:** [NearID: Identity Representation Learning via Near-identity Distractors](https://arxiv.org/abs/2604.01973)
 - **Code:** [github.com/Gorluxor/NearID](https://github.com/Gorluxor/NearID)
 
 ## License & Attribution
