@@ -30,4 +30,6 @@ CUDA_VISIBLE_DEVICES=0 accelerate launch -m training.train \
     --eval_steps 100 \
     --mixed_precision fp16 \
     --wandb.project "NearID" \
-    --wandb.mode "online"
+    --wandb.mode "disabled"
+# Weights & Biases is disabled here so this runs without an account or a login
+# prompt. Switch to --wandb.mode "online" (or "offline") to enable logging.
