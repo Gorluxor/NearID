@@ -280,10 +280,10 @@ def main(cfg: TrainConfig):
         fail_hard=True,
     )
 
-    has_encodeid_negs = bool(cfg.data.neg_paths and len(cfg.data.neg_paths) > 0)
+    has_nearid_negs = bool(cfg.data.neg_paths and len(cfg.data.neg_paths) > 0)
     has_mtg = bool(cfg.data.mtg_train_path and cfg.data.mtg_train_path.strip())
 
-    if not has_encodeid_negs and not has_mtg:
+    if not has_nearid_negs and not has_mtg:
         raise ValueError(
             "At least one training source must be set: "
             "data.neg_paths (NearID negatives) and/or data.mtg_train_path (MTG)."
@@ -310,7 +310,7 @@ def main(cfg: TrainConfig):
 
     # Training dataset
     train_dataset = None
-    if has_encodeid_negs:
+    if has_nearid_negs:
         neg_ds_list = cfg.data.neg_paths
         train_dataset = NearIDDataset(
             pos_ds,

@@ -6,10 +6,10 @@ Usage:
     python scripts/upload_nearid_datasets.py --dry_run
 
     # Upload all negatives:
-    python scripts/upload_nearid_datasets.py --data_root ./data/EncodeID
+    python scripts/upload_nearid_datasets.py --data_root ./data/NearID
 
     # Upload a single source:
-    python scripts/upload_nearid_datasets.py --data_root ./data/EncodeID --sources Flux
+    python scripts/upload_nearid_datasets.py --data_root ./data/NearID --sources Flux
 
     # Upload positives card only (data already on HF):
     python scripts/upload_nearid_datasets.py --positives_only
@@ -23,15 +23,15 @@ from pathlib import Path
 # Source registry: local folder name  →  (HF suffix, human-readable generator)
 # ---------------------------------------------------------------------------
 SOURCES = {
-    "EncodeID-Flux":      ("Flux",       "FLUX.1 inpainting",                    "512×512"),
-    "EncodeID-Flux-1024": ("Flux_1024",  "FLUX.1 inpainting",                    "1024×1024"),
-    "EncodeID-FluxC":     ("FluxC",      "FLUX.1 Canny-guided inpainting",       "512×512"),
-    "EncodeID-FluxC-1024":("FluxC_1024", "FLUX.1 Canny-guided inpainting",       "1024×1024"),
-    "EncodeID-PowerPaint":("PowerPaint", "PowerPaint inpainting",                "512×512"),
-    "EncodeID-Qwen":      ("Qwen",       "Qwen-based inpainting",               "512×512"),
-    "EncodeID-Qwen-1328": ("Qwen_1328",  "Qwen-based inpainting",               "1328×1328"),
-    "EncodeID-SDXL":      ("SDXL",       "Stable Diffusion XL inpainting",       "512×512"),
-    "EncodeID-SDXL-1024": ("SDXL_1024",  "Stable Diffusion XL inpainting",       "1024×1024"),
+    "NearID-Flux":      ("Flux",       "FLUX.1 inpainting",                    "512×512"),
+    "NearID-Flux-1024": ("Flux_1024",  "FLUX.1 inpainting",                    "1024×1024"),
+    "NearID-FluxC":     ("FluxC",      "FLUX.1 Canny-guided inpainting",       "512×512"),
+    "NearID-FluxC-1024":("FluxC_1024", "FLUX.1 Canny-guided inpainting",       "1024×1024"),
+    "NearID-PowerPaint":("PowerPaint", "PowerPaint inpainting",                "512×512"),
+    "NearID-Qwen":      ("Qwen",       "Qwen-based inpainting",               "512×512"),
+    "NearID-Qwen-1328": ("Qwen_1328",  "Qwen-based inpainting",               "1328×1328"),
+    "NearID-SDXL":      ("SDXL",       "Stable Diffusion XL inpainting",       "512×512"),
+    "NearID-SDXL-1024": ("SDXL_1024",  "Stable Diffusion XL inpainting",       "1024×1024"),
 }
 
 HF_ORG = "Aleksandar"
@@ -395,8 +395,8 @@ def upload_positives_card(dry_run: bool = False):
 # ---------------------------------------------------------------------------
 def main():
     parser = argparse.ArgumentParser(description="Upload NearID datasets to HuggingFace Hub")
-    parser.add_argument("--data_root", type=str, default="./data/EncodeID",
-                        help="Root directory containing EncodeID-* negative folders")
+    parser.add_argument("--data_root", type=str, default="./data/NearID",
+                        help="Root directory containing NearID-* distractor folders")
     parser.add_argument("--sources", nargs="*", default=None,
                         help="Specific sources to upload (e.g. Flux SDXL). Default: all")
     parser.add_argument("--dry_run", action="store_true",

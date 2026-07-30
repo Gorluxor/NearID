@@ -34,7 +34,7 @@ SIM_MODELS = {
 }
 
 # Families whose CSVs should be auto-discovered via glob (no need to list each token)
-_AUTO_DISCOVER_FAMILIES = {"encodeid"}
+_AUTO_DISCOVER_FAMILIES = {"nearid"}
 
 MASK_TYPES = {
     "full": "image",
@@ -152,7 +152,7 @@ def load_sims_from_folder(
 
             dfs.append(df)
 
-    # --- Auto-discover families (e.g. encodeid) via glob ---
+    # --- Auto-discover families (e.g. nearid) via glob ---
     for family in _AUTO_DISCOVER_FAMILIES:
         for mask_short, mask_prefix in mask_types.items():
             pattern = os.path.join(

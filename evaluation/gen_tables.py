@@ -53,11 +53,11 @@ def _load_and_fix(root: str, split: str, mode: str, verbose: bool) -> pd.DataFra
             print(f"[WARNING] {e} — skipping {root}")
         return None
     df = fix_vlm_scores(df, verbose=verbose)
-    # Drop old long-path encodeid rows; keep short tags like MAPInfoNCEExt~3300
+    # Drop long-path duplicate rows; keep short tags like lossinfonce_ext1.0~3300
     long_mask = df["sim_model"].str.contains(r"runs~trains~", na=False)
     if long_mask.any():
         if verbose:
-            print(f"[INFO] {root}: dropping {long_mask.sum()} long-path duplicate encodeid rows.")
+            print(f"[INFO] {root}: dropping {long_mask.sum()} long-path duplicate rows.")
         df = df[~long_mask].copy()
     return df
 

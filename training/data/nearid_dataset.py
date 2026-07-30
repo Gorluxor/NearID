@@ -4,6 +4,7 @@ import ctypes
 import io
 import json
 import logging
+import re
 import multiprocessing as _mp
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional, Sequence, Tuple
@@ -236,7 +237,7 @@ class NearIDDataset(Dataset):
             else [f"neg[{i}]" for i in range(len(self.hf_negs))]
         )
         self.warn_once = True
-        self.neg_names = [a.lower().replace("encodeid-", "") for a in self.neg_names]
+        self.neg_names = [re.sub(r"^(nearid|encodeid)-", "", a.lower()) for a in self.neg_names]
 
         logger.info(f"Initialized negative dataset with names:{self.neg_names=}")
 

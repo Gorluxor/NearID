@@ -1941,7 +1941,7 @@ if __name__ == "__main__":
     ds_neg_folder = "MTG-Dataset" if args.mode == "mtg" else os.path.basename(args.ds_neg.rstrip("/"))
     _mask = "image" if not args.masks else args.mask_keep
     _max = "" if args.mode == "mtg" else ("all" if args.max_samples is None else str(args.max_samples))
-    _method = "_vlm" if args.vlm else "_vsm" if _VSM_mode else "_encodeid" if _nearid_mode else ""
+    _method = "_vlm" if args.vlm else "_vsm" if _VSM_mode else "_nearid" if _nearid_mode else ""
     _model_tag = shorten_model_tag(args.model, is_nearid=_nearid_mode)
     _base = args.output.split(".csv")[0] if args.output else "sims"
     _base = _base + f"{_method}_{_mask}_{split_tag}{_max}_{args.mode}_{_model_tag}"
