@@ -97,7 +97,7 @@ DISPLAY_DP = 3
 
 
 def _set_style(usetex: bool) -> None:
-    """ECCV LNCS publication-quality settings (see CLAUDE.md)."""
+    """Publication-quality defaults for ECCV/LNCS single-column figures."""
     plt.rcParams.update({
         "pdf.fonttype": 42,
         "ps.fonttype": 42,

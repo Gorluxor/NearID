@@ -75,10 +75,11 @@ def convert(checkpoint_dir: str, output_dir: str) -> None:
     print(f"Saved {out_safetensors} ({size_mb:.1f} MB)")
 
     # --- 4. Save config -------------------------------------------------------
-    # Import modeling module first so register_for_auto_class() runs
-    # and auto_map gets written into config.json
-    from configuration_nearid import NearIDConfig
-    import modeling_nearid  # noqa: F401  — triggers AutoClass registration
+    # Import the modeling module first so register_for_auto_class() runs and
+    # auto_map gets written into config.json. These live in the `nearid` package,
+    # not alongside this file.
+    from nearid.configuration_nearid import NearIDConfig
+    import nearid.modeling_nearid  # noqa: F401  — triggers AutoClass registration
 
     config = NearIDConfig()
     config.architectures = ["NearIDModel"]
@@ -99,7 +100,10 @@ def convert(checkpoint_dir: str, output_dir: str) -> None:
     print(f"Saved preprocessor_config.json to {output_dir}")
 
     # --- 6. Copy Python source files (needed for trust_remote_code) -----------
-    src_dir = Path(__file__).parent
+    # Source them from the `nearid` package, which is where they live.
+    import nearid
+
+    src_dir = Path(nearid.__file__).parent
     for fname in ("configuration_nearid.py", "modeling_nearid.py"):
         src_file = src_dir / fname
         dst_file = Path(output_dir) / fname

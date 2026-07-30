@@ -1,8 +1,11 @@
 """
-FULL WORKING EXAMPLE (REFactored): SigLIP2 intra-sample similarity + optional VLM judge,
-with a *batched* DataLoader GPU forward pass.
+Per-sample similarity scoring for NearID-bench and MTG.
 
-Modes (NEW):
+Computes intra-sample similarities with an embedding model (or an optional VLM
+judge) using a batched DataLoader GPU forward pass, and writes one CSV per
+distractor source for evaluation.gen_tables to pool.
+
+Modes:
 - positives : positives only (intra positives)
 - full      : positives + cross (pos vs neg)   [no neg intra]
 - fullneg   : positives + cross + neg intra
@@ -16,21 +19,15 @@ Key idea:
 # ┌────────────────────────────────────────────────────────────────────────┐
 # │ BIG NOTE on output CSV organization (2026-03-09)                      │
 # │                                                                        │
-# │ Output CSVs go to --output_folder (default: runs/evals/).              │
+# │ Output CSVs go to --output_folder (default: runs/evals/), one folder    │
+# │ per distractor source. Pool them with:                                 │
+# │   python -m evaluation.gen_tables --root <output_folder>                │
 # │                                                                        │
-# │ scripts/gen_min.py pools results from TWO roots:                       │
-# │   - NearID5R (primary): trained checkpoints + VSM                    │
-# │   - NearID5  (baseline): frozen baselines (CLIP, SigLIP2, DINOv2,   │
-# │                             Qwen3-VL 4B/8B/30B)                        │
-# │                                                                        │
-# │ gen_min.py deduplicates by sim_model NAME — if a model appears in      │
-# │ NearID5R (even for 1 source), ALL data for that model from NearID5 │
-# │ is SILENTLY DROPPED. This caused the Qwen3-VL-30B pooling bug where   │
-# │ only 2/7 sources were included (n=998 instead of 3500).               │
-# │                                                                        │
-# │ RULE: Baseline VLM outputs (Qwen3-VL-*) must go ONLY into NearID5,  │
-# │       NEVER into NearID5R. Trained checkpoints go into NearID5R.   │
-# │       Stray duplicates in the wrong root cause silent data loss.       │
+# │ gen_tables can merge a second --baseline_root, and deduplicates by      │
+# │ sim_model NAME: if a model is present in both roots, one copy is        │
+# │ dropped. Pass --overlap primary|baseline|union to choose explicitly;    │
+# │ without it, an overlap raises rather than silently discarding data.     │
+# │ Keep each model's CSVs in a single root to avoid the ambiguity.         │
 # └────────────────────────────────────────────────────────────────────────┘
 
 Tested structure for HuggingFace datasets where columns are:
@@ -97,9 +94,9 @@ try:
         AutoModel.register(NearIDConfig, NearIDModel)
     except Exception:
         pass  # Already registered
-    ENCODEID_AVAILABLE = True
+    NEARID_AVAILABLE = True
 except ImportError:
-    ENCODEID_AVAILABLE = False
+    NEARID_AVAILABLE = False
 
 # Also support loading NearIDModel from HuggingFace Hub
 try:
@@ -437,7 +434,7 @@ class NearIDSimilarityCalculator:
         device: Optional[str] = None,
         dtype: torch.dtype = torch.float16,
     ):
-        if not ENCODEID_AVAILABLE:
+        if not NEARID_AVAILABLE:
             raise ImportError(
                 "NearID dependencies not available. "
                 "Ensure the training package is importable (training/models.py, training/config.py)."

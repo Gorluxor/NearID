@@ -30,5 +30,10 @@ dependencies:
       - simple-parsing
       - wandb
 
+      # Evaluation — both are unguarded top-level imports in
+      # evaluation/sim_test.py, so it fails at import without them.
+      - opencv-python-headless
+      - json_repair
+
       # Logging & utilities
       - tqdm

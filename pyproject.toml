@@ -56,7 +56,7 @@ eval = [
     "datasets",
     # Unguarded top-level imports in evaluation/sim_test.py — omitting any of
     # these makes `python -m evaluation.sim_test` fail at import.
-    "opencv-python",
+    "opencv-python-headless",
     "json_repair",
     "wandb",
     # dreambench_plus/per_category.py
