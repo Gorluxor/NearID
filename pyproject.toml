@@ -18,9 +18,11 @@ license = "Apache-2.0"
 readme = "README.md"
 keywords = ["identity-embedding", "metric-learning", "contrastive-learning", "image-similarity"]
 classifiers = [
+    # No "License ::" classifier here: PEP 639 supersedes it with the
+    # `license = "Apache-2.0"` expression above, and current setuptools errors
+    # out if both are present, which breaks `pip install -e .`.
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Science/Research",
-    "License :: OSI Approved :: Apache Software License",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
@@ -42,6 +44,8 @@ train = [
     "wandb",
     "tqdm",
     "numpy",
+    # training/data/{nearid,mtg}_dataset.py import torchvision at module scope
+    "torchvision",
 ]
 eval = [
     "pandas",
@@ -50,6 +54,13 @@ eval = [
     "tqdm",
     "numpy",
     "datasets",
+    # Unguarded top-level imports in evaluation/sim_test.py — omitting any of
+    # these makes `python -m evaluation.sim_test` fail at import.
+    "opencv-python",
+    "json_repair",
+    "wandb",
+    # dreambench_plus/per_category.py
+    "matplotlib",
 ]
 all = ["nearid[train,eval]"]
 

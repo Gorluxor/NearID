@@ -166,9 +166,13 @@ The frozen trunk can be read out two ways, and both are shipped:
 | **`NearID`** | same MAP head, retrained | **0.545** | **0.445** |
 
 NearID retrains SigLIP2's MAP head, so `SigLIP2-MAPHead` is the like-for-like
-baseline. The reported `SigLIP2-Backbone` is the *stronger* of the two on `object`,
-which makes the quoted +0.029 margin the conservative one — against the MAP-head
-readout it is +0.056. Both rows appear in `pearson.py --full`. Note that
+baseline. Which of the two is harder depends on the category: on the reported
+`object` category mean pooling is the stronger baseline (so the quoted +0.029 is
+conservative; against MAP head it is +0.056), while on `animal` and `human` mean
+pooling is the softer one (+0.102 → +0.065 and +0.063 → +0.042). Every
+conclusion holds under either readout — NearID leads on object, animal and human,
+trails on style, and leads on the all-category Fisher-z both ways — only the margin
+sizes change. Both rows appear in `pearson.py --full`. Note that
 `evaluation/sim_test.py` uses the MAP-head readout, so Table 1's SigLIP2 row is
 MAP-head for the NearID/MTG columns and mean-pooled for DB++.
 
@@ -190,7 +194,13 @@ borderline margin trial:
 | MTG MO | 0.454 | 0.465 |
 | MTG MOpair | 0.475 | 0.486 |
 | MTG SSR / PA | 34.0 / 46.0 | 35.0 / 46.5 |
-| DB++ MH | 0.545 | 0.545 |
+| DB++ MH, NearID | 0.545 | 0.545 |
+| DB++ MH, SigLIP2 baseline | 0.515 | 0.516 |
+
+The DB++ SigLIP2 row differs in the last digit. The pipeline here computes
+`0.515475`, which rounds to 0.515; the paper reports 0.516. This is a
+reproduction difference, not display rounding, and it does not affect any
+comparison — NearID's margin is +0.029 either way.
 
 ## Splits
 

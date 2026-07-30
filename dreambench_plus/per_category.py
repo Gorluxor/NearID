@@ -88,6 +88,13 @@ MODEL_COLORS = {
 # The model set used for the figure in the paper.
 DEFAULT_MODELS = "NearID,SigLIP2-Backbone,VSM,DINO,GPT"
 
+# The paper reports correlations at 3 decimals, and the original figure script
+# read its values back out of correlation_table_<category>.csv at that precision.
+# Vertex labels therefore round to 3dp *before* formatting to 2dp, which is what
+# makes them identical to the published figure (0.544935 -> 0.545 -> "0.55").
+# Everything numeric — deltas, cross-category aggregates — uses the raw value.
+DISPLAY_DP = 3
+
 
 def _set_style(usetex: bool) -> None:
     """ECCV LNCS publication-quality settings (see CLAUDE.md)."""
@@ -150,13 +157,12 @@ def load_per_category(models: List[str], ratings_dir: str) -> pd.DataFrame:
                 "model": model,
                 "category": cat,
                 "category_label": CATEGORY_LABELS[CATEGORIES.index(cat)],
-                # Rounded to 3 decimals, which is the precision the paper reports
-                # and the precision the original figure script read back out of
-                # correlation_table_<category>.csv. Keeping it makes the vertex
-                # labels identical to the published figure (e.g. 0.545 -> "0.55").
-                "mean": round(fisher_z_mean(rs), 3),
+                # Unrounded, so deltas and cross-category aggregates agree with
+                # pearson.py. Rounding happens at display time only — see
+                # DISPLAY_DP and plot_radar().
+                "mean": fisher_z_mean(rs),
                 # Standard error across the 7 methods, matching pearson.py.
-                "std": round(float(np.std(rs, ddof=1) / np.sqrt(len(rs))), 3) if len(rs) > 1 else 0.0,
+                "std": float(np.std(rs, ddof=1) / np.sqrt(len(rs))) if len(rs) > 1 else 0.0,
             })
     return pd.DataFrame(rows)
 
@@ -302,7 +308,7 @@ def plot_radar(data: pd.DataFrame, out_path: Path, ours_key: str = OURS_KEY,
         if annotate:
             for angle, val in zip(angles[:-1], values):
                 ax.text(
-                    angle, val + 0.06, f"{val:.2f}",
+                    angle, val + 0.06, f"{round(val, DISPLAY_DP):.2f}",
                     ha="center", va="bottom", fontsize=8,
                     fontweight="bold", color="#333333",
                 )

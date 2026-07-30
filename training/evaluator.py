@@ -165,7 +165,7 @@ class MTGOnlineEvaluator:
 
     @torch.inference_mode()
     def run(self, checkpoint_path: str, step: int, device: str = "cuda"):
-        from inference import NearIDInference
+        from evaluation.inference import NearIDInference
         import torch.nn.functional as F
         from tqdm.auto import tqdm
         import wandb

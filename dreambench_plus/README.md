@@ -151,10 +151,23 @@ position in the graph — with those weights **retrained** rather than pretraine
 
 Two things worth noting:
 
-1. **The reported baseline is the harder one.** On `object`, mean pooling (0.515)
-   scores above the native MAP head (0.489), so the margin the paper quotes
-   (+0.029) is conservative; measured against the like-for-like MAP-head baseline
-   it would be +0.056. NearID leads on the all-category Fisher-z either way.
+1. **Which baseline is harder depends on the category.** On the reported `object`
+   category mean pooling (0.515) scores above the native MAP head (0.489), so the
+   quoted +0.029 margin is the conservative one there — against MAP head it is
+   +0.056. On `animal` and `human` it goes the other way: mean pooling is the
+   *softer* baseline, so those margins shrink against MAP head:
+
+   | category | Δ vs mean-pool (reported) | Δ vs MAP head |
+   |---|---|---|
+   | object | +0.029 | +0.056 |
+   | animal | +0.102 | +0.065 |
+   | human | +0.063 | +0.042 |
+   | style | −0.092 | −0.049 |
+
+   NearID leads on `object`, `animal` and `human` and trails on `style` under
+   *either* readout, and leads on the all-category Fisher-z under both
+   (0.445 vs 0.419 mean-pool, vs 0.415 MAP head). The direction of every
+   conclusion is unchanged; only the size of the margins moves.
 2. `evaluation/sim_test.py` scores its SigLIP2 baseline with `get_image_features`,
    i.e. readout (b). So the "SigLIP2 (backbone)" row of Table 1 uses the MAP-head
    readout for the NearID and MTG columns and the mean-pooled readout for the DB++
