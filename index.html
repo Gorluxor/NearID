@@ -204,6 +204,7 @@ footer {
   <a href="#mtg-qual">MTG Qual.</a>
   <a href="#attention">Attention</a>
   <a href="#dreambench">DB++</a>
+  <a href="#landscape">Two Axes</a>
   <a href="#distributions">Distributions</a>
 </nav>
 
@@ -651,6 +652,42 @@ footer {
       NearID (red) leads on Object (0.549) and ranks competitively on Animal, Human, and Style.
       GPT-4o (orange) leads on Object but requires a costly closed-source API call per image pair.
       NearID achieves comparable performance with a 15M-param MAP head at &lt;1 ms per embedding.
+    </p>
+  </div>
+</div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════
+     §6b  The landscape: discrimination vs human alignment
+     ═══════════════════════════════════════════════════════════ -->
+<section id="landscape">
+<div class="container">
+  <div class="bubble-wrap"><span class="bubble"><span class="icon">&#9678;</span> Two Axes <span class="takeaway">High SSR is easy to fake &ndash; human alignment is what keeps it honest</span></span></div>
+
+  <div class="fig-card">
+    <img src="website/nearid_landscape_scatter.svg" alt="Scatter plot: NearID-bench SSR on the x-axis against DreamBench++ human alignment on the y-axis, with NearID at 99.17 / 0.545, collapsed ablations at high SSR but low alignment, and the concurrent metrics ID-Sim and TPIPS at high alignment but low SSR">
+    <p class="fig-caption">
+      <strong>Discrimination is not alignment.</strong>
+      Every point is a scoring model placed by its <strong>NearID-bench SSR</strong> (x) and its
+      <strong>DreamBench++ M&ndash;H</strong> on the object category (y).
+      <strong>NearID</strong> <span style="color:#0369a1;font-weight:700;">(blue)</span> sits top-right at 99.17 / 0.545, above the frozen SigLIP2 baseline on both axes.
+      The <span style="color:#b45309;font-weight:600;">amber</span> band is the warning: training-objective variants that reach
+      99.6&ndash;100 SSR while human alignment falls to 0.14&ndash;0.25. A metric can win the benchmark
+      by collapsing its representation, which is why we never report SSR on its own.
+    </p>
+    <p class="fig-caption" style="border-top:1px solid #e8edf4;">
+      <strong>On the two <span style="color:#6d28d9;">purple</span> points.</strong>
+      <a href="https://arxiv.org/abs/2604.05039">ID-Sim</a> (CVPR 2026) and
+      <a href="https://arxiv.org/abs/2607.18237">TPIPS</a> (arXiv 2026) are concurrent identity and
+      perceptual-similarity metrics, <em>not</em> part of the paper. We scored them ourselves under
+      the NearID protocol after publication, and we report each at its <em>best</em> configuration:
+      ID-Sim at 53.11 SSR (best of 15 backbone &times; scoring-mode combinations) and TPIPS at
+      34.89 SSR (best of 14 text factors). Both reproduce their own published numbers in our hands,
+      so this is a difference in objective, not an integration failure.
+      They lead us on human alignment and trail us on matched-context discrimination &ndash; the
+      ordering on the two axes is reversed, which is the same point the amber band makes from the
+      other direction.
     </p>
   </div>
 </div>

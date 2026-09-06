@@ -1,0 +1,78 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -40 560 274" width="1120" height="548" role="img" aria-label="Scatter plot of NearID-bench SSR against DreamBench++ human alignment, showing NearID, eight training-objective ablations, a frozen SigLIP2 baseline, and the concurrent metrics ID-Sim and TPIPS">
+  <defs>
+    <style>
+      .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace; }
+      .sans { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
+    </style>
+  </defs>
+
+  <rect x="0" y="-40" width="560" height="274" fill="#ffffff"></rect>
+
+  <!-- collapse band: high SSR, low human alignment -->
+  <rect x="54" y="121" width="490" height="72" fill="#b45309" opacity="0.08"></rect>
+  <text x="74" y="172" class="mono" font-size="11" fill="#b45309">representation collapse: SSR up, meaning gone</text>
+
+  <!-- gridlines -->
+  <line x1="54" y1="157" x2="544" y2="157" stroke="#e2e8f0" stroke-width="1"></line>
+  <line x1="54" y1="121" x2="544" y2="121" stroke="#e2e8f0" stroke-width="1"></line>
+  <line x1="54" y1="85"  x2="544" y2="85"  stroke="#e2e8f0" stroke-width="1"></line>
+  <line x1="54" y1="48"  x2="544" y2="48"  stroke="#e2e8f0" stroke-width="1"></line>
+  <line x1="54" y1="12"  x2="544" y2="12"  stroke="#e2e8f0" stroke-width="1"></line>
+  <line x1="54" y1="-24.2" x2="544" y2="-24.2" stroke="#e2e8f0" stroke-width="1.2"></line>
+
+  <!-- axes -->
+  <line x1="54" y1="193" x2="544" y2="193" stroke="#0d1b2a" stroke-width="1.5"></line>
+  <line x1="54" y1="-24.2" x2="54" y2="193" stroke="#0d1b2a" stroke-width="1.5"></line>
+
+  <!-- y ticks -->
+  <text x="48" y="-20.2" class="mono" font-size="11" fill="#64748b" text-anchor="end">0.70</text>
+  <text x="48" y="16"  class="mono" font-size="11" fill="#64748b" text-anchor="end">0.60</text>
+  <text x="48" y="52"  class="mono" font-size="11" fill="#64748b" text-anchor="end">0.50</text>
+  <text x="48" y="89"  class="mono" font-size="11" fill="#64748b" text-anchor="end">0.40</text>
+  <text x="48" y="125" class="mono" font-size="11" fill="#64748b" text-anchor="end">0.30</text>
+  <text x="48" y="161" class="mono" font-size="11" fill="#64748b" text-anchor="end">0.20</text>
+  <text x="48" y="197" class="mono" font-size="11" fill="#64748b" text-anchor="end">0.10</text>
+
+  <!-- x ticks -->
+  <text x="53.5" y="205" class="mono" font-size="11" fill="#64748b" text-anchor="middle">25</text>
+  <text x="217"  y="205" class="mono" font-size="11" fill="#64748b" text-anchor="middle">50</text>
+  <text x="381"  y="205" class="mono" font-size="11" fill="#64748b" text-anchor="middle">75</text>
+  <text x="544"  y="205" class="mono" font-size="11" fill="#64748b" text-anchor="middle">100</text>
+
+  <!-- axis titles -->
+  <text x="299" y="222" class="sans" font-size="16" font-weight="700" fill="#0d1b2a" text-anchor="middle">NearID-bench SSR &#8594;</text>
+  <text x="17" y="102" class="sans" font-size="16" font-weight="700" fill="#0d1b2a" text-anchor="middle" transform="rotate(-90 17 102)">human alignment M&#8211;H &#8594;</text>
+
+  <!-- concurrent metrics, measured by us under the NearID protocol -->
+  <circle cx="118.2" cy="-6.1" r="7" fill="#ffffff" stroke="#6d28d9" stroke-width="2.4"></circle>
+  <text x="130" y="-2" class="mono" font-size="11" fill="#6d28d9">TPIPS</text>
+  <circle cx="237.3" cy="15.6" r="7" fill="#ffffff" stroke="#6d28d9" stroke-width="2.4"></circle>
+  <text x="237" y="4" class="mono" font-size="11" fill="#6d28d9" text-anchor="middle">ID-Sim</text>
+
+  <!-- frozen baseline -->
+  <line x1="54" y1="42" x2="544" y2="42" stroke="#64748b" stroke-width="1.5" stroke-dasharray="7 5"></line>
+  <text x="72" y="30" class="mono" font-size="12" fill="#64748b">frozen baseline 0.516</text>
+  <circle cx="92" cy="42" r="5" fill="#64748b"></circle>
+  <text x="92" y="66" class="mono" font-size="12" fill="#64748b" text-anchor="middle">frozen</text>
+
+  <!-- ablations that collapse -->
+  <circle cx="541" cy="139" r="5" fill="#b45309"></circle>
+  <circle cx="541" cy="148" r="5" fill="#b45309"></circle>
+  <circle cx="543" cy="179" r="5" fill="#b45309"></circle>
+  <circle cx="455" cy="169" r="5" fill="#b45309"></circle>
+  <path d="M527 133 L521 133 L521 185 L527 185" fill="none" stroke="#b45309" stroke-width="1.2"></path>
+  <text x="515" y="139" class="mono" font-size="11" fill="#b45309" text-anchor="end">hierarchy-only + oracle-rank variants: 99.6&#8211;100 SSR, M&#8211;H 0.14&#8211;0.25</text>
+
+  <!-- mid ablations -->
+  <circle cx="290" cy="28" r="5" fill="#94a3b8"></circle>
+  <text x="281" y="30" class="mono" font-size="11" fill="#475569" text-anchor="end">InfoNCE</text>
+  <circle cx="293" cy="37" r="5" fill="#94a3b8"></circle>
+  <path d="M297 41 L306 56" fill="none" stroke="#94a3b8" stroke-width="1"></path>
+  <text x="302" y="66" class="mono" font-size="11" fill="#475569">SigLIP BCE</text>
+
+  <!-- ours -->
+  <circle cx="538" cy="31" r="12" fill="none" stroke="#0369a1" stroke-width="2"></circle>
+  <circle cx="538" cy="31" r="7" fill="#0369a1"></circle>
+  <path d="M534 44 L534 92" fill="none" stroke="#0369a1" stroke-width="1.2"></path>
+  <text x="521" y="103" class="sans" font-size="15" font-weight="800" fill="#0369a1" text-anchor="end">NearID (ours) &#183; 99.17 / 0.545</text>
+</svg>
