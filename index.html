@@ -14,8 +14,12 @@ body {
   line-height: 1.65;
   color: #1a1a2e;
   background: #f7f8fc;
-  zoom: 1.35;
+  -webkit-text-size-adjust: 100%;
 }
+/* The 1.35 page zoom is a desktop affordance. On a phone it shrinks the usable
+   viewport (a 390px screen becomes ~289 CSS px) while every fixed padding stays,
+   which is what made the layout feel cramped and oversized at the same time. */
+@media (min-width: 900px) { body { zoom: 1.35; } }
 
 /* ── Navigation ───────────────────────────────────────────── */
 nav {
@@ -49,20 +53,23 @@ nav a:hover { color: #fff; border-bottom-color: #4da6ff; }
 }
 .hero .venue { font-size: 1rem; color: #7ab8e8; font-weight: 600; margin-bottom: 1.2rem; }
 .venue-badge {
-  display: inline-block; margin: 0.5rem 0 0.9rem;
+  display: inline-block; margin: 0.5rem 0 0.45rem;
   background: rgba(110,231,183,0.14);
   border: 1px solid rgba(110,231,183,0.45);
   color: #6ee7b7; padding: 0.3rem 1.1rem; border-radius: 999px;
   font-size: 0.85rem; font-weight: 700; letter-spacing: 0.06em;
   text-transform: uppercase;
 }
-.anon-badge {
-  display: inline-block; margin-bottom: 1.6rem;
-  background: rgba(77,166,255,0.15);
-  border: 1px solid rgba(77,166,255,0.4);
-  color: #4da6ff; padding: 0.3rem 1rem; border-radius: 999px;
-  font-size: 0.82rem; letter-spacing: 0.04em;
+.talk-badge {
+  display: inline-block; margin: 0 0 1.3rem;
+  background: rgba(77,166,255,0.13);
+  border: 1px solid rgba(77,166,255,0.35);
+  color: #93c5fd; padding: 0.22rem 0.85rem; border-radius: 999px;
+  font-size: 0.75rem; letter-spacing: 0.03em; text-decoration: none;
+  transition: color 0.2s, border-color 0.2s;
 }
+.talk-badge:hover { color: #cfe6ff; border-color: rgba(77,166,255,0.7); }
+.talk-badge .lead { opacity: 0.75; }
 
 /* ── TL;DR ────────────────────────────────────────────────── */
 .tldr {
@@ -188,6 +195,130 @@ footer {
   background: #0d1b2a; color: #7ab8e8;
   text-align: center; padding: 1.6rem 2rem; font-size: 0.85rem;
 }
+
+/* ── Carousel ─────────────────────────────────────────────── */
+.carousel-wrap { position: relative; }
+.carousel {
+  display: flex; overflow-x: auto; scroll-snap-type: x mandatory;
+  scroll-behavior: smooth; gap: 0;
+  -webkit-overflow-scrolling: touch; scrollbar-width: none;
+}
+.carousel::-webkit-scrollbar { display: none; }
+.slide { flex: 0 0 100%; scroll-snap-align: center; min-width: 0; }
+.slide-inner { padding: 1.1rem 1.2rem 1.3rem; }
+.slide-kicker {
+  font-size: 0.72rem; font-weight: 700; letter-spacing: 0.09em;
+  text-transform: uppercase; color: #4da6ff; margin-bottom: 0.25rem;
+}
+.slide-title { font-size: 1.05rem; font-weight: 700; color: #0d1b2a; margin-bottom: 0.15rem; }
+.slide-sub { font-size: 0.87rem; color: #444; line-height: 1.55; margin-bottom: 0.9rem; }
+.triptych { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.7rem; }
+.panel { min-width: 0; }
+.panel img {
+  display: block; width: 100%; height: auto; border-radius: 8px;
+  border: 1px solid #e0e6f0; background: #fff;
+}
+.panel-tag {
+  display: inline-block; margin-top: 0.4rem; font-size: 0.72rem; font-weight: 700;
+  letter-spacing: 0.04em; padding: 0.15rem 0.5rem; border-radius: 999px;
+}
+.tag-ref  { background: #eef2f7; color: #334155; border: 1px solid #cbd5e1; }
+.tag-pos  { background: #e6f4ea; color: #15803d; border: 1px solid #a7d8b8; }
+.tag-neg  { background: #fdf0e6; color: #b45309; border: 1px solid #edc9a3; }
+.panel-note { font-size: 0.76rem; color: #64748b; line-height: 1.45; margin-top: 0.25rem; }
+.verdict {
+  margin-top: 0.9rem; display: flex; flex-wrap: wrap; gap: 0.45rem 0.6rem; align-items: center;
+  border-top: 1px solid #e8edf4; padding-top: 0.75rem;
+}
+.score {
+  font-size: 0.78rem; padding: 0.28rem 0.65rem; border-radius: 6px;
+  border: 1px solid #e0e6f0; background: #f9fafd; color: #334155;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+.score b { font-weight: 700; }
+.score.pass { border-color: #a7d8b8; background: #f2faf5; color: #15803d; }
+.score.fail { border-color: #f0b7b7; background: #fdf3f3; color: #b3261e; }
+.carousel-nav {
+  display: flex; align-items: center; justify-content: space-between; gap: 0.8rem;
+  padding: 0.55rem 1.2rem 0.9rem;
+}
+.carousel-btn {
+  border: 1px solid #cbd5e1; background: #fff; color: #0d1b2a; cursor: pointer;
+  border-radius: 999px; width: 34px; height: 34px; font-size: 1rem; line-height: 1;
+  flex: 0 0 auto;
+}
+.carousel-btn:hover { background: #0d1b2a; color: #fff; border-color: #0d1b2a; }
+.carousel-btn:disabled { opacity: 0.35; cursor: default; background: #fff; color: #0d1b2a; border-color: #cbd5e1; }
+.dots { display: flex; gap: 0.4rem; flex-wrap: wrap; justify-content: center; }
+.dot {
+  width: 8px; height: 8px; border-radius: 50%; background: #cbd5e1;
+  border: none; padding: 0; cursor: pointer;
+}
+.dot[aria-current="true"] { background: #0369a1; width: 22px; border-radius: 999px; }
+.swipe-hint { font-size: 0.74rem; color: #94a3b8; }
+
+/* ── Mobile ───────────────────────────────────────────────── */
+@media (max-width: 720px) {
+  body { font-size: 15px; line-height: 1.6; }
+  .container { padding: 0 0.9rem; }
+  section { padding: 1.1rem 0; }
+  nav { padding: 0 0.6rem; }
+  nav .brand { margin-right: 0.7rem; font-size: 0.92rem; }
+  nav a { font-size: 0.78rem; padding: 0.7rem 0.5rem; }
+  .hero { padding: 1.8rem 1rem 1.6rem; }
+  .hero h1 { font-size: 1.35rem; line-height: 1.3; }
+  .tldr-pill { white-space: normal; font-size: 0.76rem; }
+  .bubble { font-size: 0.92rem; padding: 0.45rem 0.9rem; flex-wrap: wrap; justify-content: center; }
+  .bubble .takeaway { flex-basis: 100%; }
+  .fig-caption { padding: 0.7rem 0.85rem; font-size: 0.83rem; }
+  .slide-inner { padding: 0.9rem 0.85rem 1rem; }
+  .triptych { gap: 0.45rem; }
+  .panel-tag { font-size: 0.64rem; padding: 0.12rem 0.4rem; }
+  .panel-note { display: none; }
+  .carousel-nav { padding: 0.5rem 0.85rem 0.8rem; }
+  .tab-bar { flex-wrap: wrap; }
+  .scroll-x { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+}
+@media (max-width: 420px) {
+  .hero h1 { font-size: 1.2rem; }
+  .slide-title { font-size: 0.97rem; }
+  .slide-sub { font-size: 0.82rem; }
+}
+
+/* ── Lightbox (tap any figure to enlarge) ─────────────────── */
+.zoomable { cursor: zoom-in; }
+.lightbox {
+  position: fixed; inset: 0; z-index: 300;
+  background: rgba(8,12,20,0.95);
+  display: none; align-items: center; justify-content: center;
+  overflow: auto; overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch; touch-action: pinch-zoom;
+  padding: 1rem;
+}
+.lightbox.open { display: flex; }
+.lightbox img {
+  max-width: 96vw; max-height: 86vh; width: auto; height: auto;
+  object-fit: contain; border-radius: 8px; background: #fff; cursor: zoom-in;
+  margin: auto;
+}
+.lightbox img.zoomed { max-width: none; max-height: none; width: 230vw; cursor: zoom-out; }
+.lightbox-close {
+  position: fixed; top: 0.7rem; right: 0.8rem; z-index: 310;
+  width: 40px; height: 40px; border-radius: 50%; cursor: pointer;
+  border: 1px solid rgba(255,255,255,0.35); background: rgba(0,0,0,0.45);
+  color: #fff; font-size: 1.3rem; line-height: 1;
+}
+.lightbox-cap {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 305;
+  padding: 0.6rem 1rem; text-align: center;
+  font-size: 0.8rem; color: #cbd5e1; background: rgba(8,12,20,0.75);
+}
+/* body carries zoom:1.35 on desktop, which would scale this fixed overlay too
+   and push 96vw past the screen. Cancel it exactly (1/1.35). */
+@media (min-width: 900px) { .lightbox { zoom: 0.740741; } }
+
+/* Sticky nav would otherwise cover a section heading jumped to from the nav. */
+section { scroll-margin-top: 58px; }
 </style>
 </head>
 <body>
@@ -196,6 +327,8 @@ footer {
 <nav>
   <span class="brand">NearID</span>
   <a href="#teaser">Teaser</a>
+  <a href="#examples">What We Test</a>
+  <a href="#landscape">Two Axes</a>
   <a href="#method">Method</a>
   <a href="#main-results">Results</a>
   <a href="#contrastive">Paradigm</a>
@@ -204,7 +337,6 @@ footer {
   <a href="#mtg-qual">MTG Qual.</a>
   <a href="#attention">Attention</a>
   <a href="#dreambench">DB++</a>
-  <a href="#landscape">Two Axes</a>
   <a href="#distributions">Distributions</a>
 </nav>
 
@@ -212,6 +344,9 @@ footer {
 <div class="hero">
   <h1><span style="color:#6ee7b7;">NearID</span>: Identity Representation Learning<br>via Near-Identity Distractors</h1>
   <div class="venue-badge">Accepted to ECCV 2026</div>
+  <div>
+    <a class="talk-badge" href="https://ilr-workshop.github.io/ECCVW2026/" target="_blank" rel="noopener"><span class="lead">Also an</span> invited oral at the ILR+G workshop</a>
+  </div>
   <p style="font-size:0.95rem; color:#c8dff4; margin-bottom:0.3rem;">
     <strong>Aleksandar Cvejic</strong><sup>1</sup>,
     <strong>Rameen Abdal</strong><sup>2,&#8224;</sup>,
@@ -270,6 +405,242 @@ footer {
       <strong>(Middle)</strong> Synthetic data lacks explicit control over visually similar distractors.
       <strong>(Right)</strong> NearID introduces matched-context distractors to remove contextual shortcuts
       and isolate intrinsic identity signals.
+    </p>
+  </div>
+</div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════
+     §0a2  What the benchmark actually tests
+     ═══════════════════════════════════════════════════════════ -->
+<section id="examples">
+<div class="container">
+  <div class="bubble-wrap"><span class="bubble"><span class="icon">&#128269;</span> What We Test <span class="takeaway">Same object in a new scene must beat a different object in the same scene</span></span></div>
+
+  <div class="fig-card carousel-wrap">
+    <div class="carousel" id="exCarousel" tabindex="0" aria-label="Benchmark examples, swipe or use the arrows">
+      <div class="slide" id="slide-0">
+        <div class="slide-inner">
+          <div class="slide-kicker">The idea, in one example</div>
+          <div class="slide-title">Can a model tell <em>this</em> alien from a different one?</div>
+          <p class="slide-sub">
+            Show a model a reference image. Then show it the <strong>same</strong> character somewhere new,
+            and a <strong>different</strong> character standing in the reference's own scene.
+            A good identity model should say the first one is the match. Most say the second,
+            because it recognises the street, not the character.
+          </p>
+          <div class="triptych">
+            <div class="panel">
+              <img src="website/examples/alien_ref.jpg" alt="Reference: a mint-green plush alien in a cosmic scene" loading="lazy">
+              <span class="panel-tag tag-ref">REFERENCE</span>
+              <p class="panel-note">The character we care about.</p>
+            </div>
+            <div class="panel">
+              <img src="website/examples/alien_pos.jpg" alt="The same alien standing on a city street" loading="lazy">
+              <span class="panel-tag tag-pos">SAME &#183; NEW SCENE</span>
+              <p class="panel-note">Same character, everything else changed. This is the match.</p>
+            </div>
+            <div class="panel">
+              <img src="website/examples/alien_neg.jpg" alt="A different alien on the same city street" loading="lazy">
+              <span class="panel-tag tag-neg">DIFFERENT &#183; SAME SCENE</span>
+              <p class="panel-note">Different character, <strong>identical</strong> street. Background is now useless as a clue.</p>
+            </div>
+          </div>
+          <div class="verdict">
+            <span class="score">Pass the test only if <b>same &#183; new scene</b> scores higher than <b>different &#183; same scene</b>.</span>
+          </div>
+        </div>
+      </div>
+      <div class="slide" id="slide-1">
+        <div class="slide-inner">
+          <div class="slide-kicker">Real test example 1 of 5 &#183; held-out test split</div>
+          <div class="slide-title">An ambulance</div>
+          <p class="slide-sub">
+            The distractor is a <em>different</em> object (all-red livery) inpainted into the reference's
+            own background. Reference shows white-and-red livery.
+          </p>
+          <div class="triptych">
+            <div class="panel">
+              <img src="website/examples/ambulance_ref.jpg" alt="An ambulance: reference view" loading="lazy">
+              <span class="panel-tag tag-ref">REFERENCE</span>
+            </div>
+            <div class="panel">
+              <img src="website/examples/ambulance_pos.jpg" alt="An ambulance: same object, different scene" loading="lazy">
+              <span class="panel-tag tag-pos">SAME &#183; NEW SCENE</span>
+            </div>
+            <div class="panel">
+              <img src="website/examples/ambulance_neg.jpg" alt="An ambulance: different object, same scene" loading="lazy">
+              <span class="panel-tag tag-neg">DIFFERENT &#183; SAME SCENE</span>
+            </div>
+          </div>
+          <div class="verdict">
+            <span class="score fail"><b>SigLIP2</b> &nbsp;same 0.912 &nbsp;&#183;&nbsp; different 0.916 &nbsp;&#183;&nbsp; margin -0.004 &nbsp;gets it wrong</span>
+            <span class="score pass"><b>NearID</b> &nbsp;same 0.931 &nbsp;&#183;&nbsp; different 0.694 &nbsp;&#183;&nbsp; margin +0.237 &nbsp;ranks it correctly</span>
+          </div>
+        </div>
+      </div>
+      <div class="slide" id="slide-2">
+        <div class="slide-inner">
+          <div class="slide-kicker">Real test example 2 of 5 &#183; held-out test split</div>
+          <div class="slide-title">A pixel-art character</div>
+          <p class="slide-sub">
+            The distractor is a <em>different</em> object (red armoured robot) inpainted into the reference's
+            own background. Reference shows orange blob with a hammer.
+          </p>
+          <div class="triptych">
+            <div class="panel">
+              <img src="website/examples/pixel_ref.jpg" alt="A pixel-art character: reference view" loading="lazy">
+              <span class="panel-tag tag-ref">REFERENCE</span>
+            </div>
+            <div class="panel">
+              <img src="website/examples/pixel_pos.jpg" alt="A pixel-art character: same object, different scene" loading="lazy">
+              <span class="panel-tag tag-pos">SAME &#183; NEW SCENE</span>
+            </div>
+            <div class="panel">
+              <img src="website/examples/pixel_neg.jpg" alt="A pixel-art character: different object, same scene" loading="lazy">
+              <span class="panel-tag tag-neg">DIFFERENT &#183; SAME SCENE</span>
+            </div>
+          </div>
+          <div class="verdict">
+            <span class="score fail"><b>SigLIP2</b> &nbsp;same 0.895 &nbsp;&#183;&nbsp; different 0.901 &nbsp;&#183;&nbsp; margin -0.006 &nbsp;gets it wrong</span>
+            <span class="score pass"><b>NearID</b> &nbsp;same 0.858 &nbsp;&#183;&nbsp; different 0.686 &nbsp;&#183;&nbsp; margin +0.172 &nbsp;ranks it correctly</span>
+          </div>
+        </div>
+      </div>
+      <div class="slide" id="slide-3">
+        <div class="slide-inner">
+          <div class="slide-kicker">Real test example 3 of 5 &#183; held-out test split</div>
+          <div class="slide-title">A pair of rain boots</div>
+          <p class="slide-sub">
+            The distractor is a <em>different</em> object (shorter dark-brown boots) inpainted into the reference's
+            own background. Reference shows tall tan boots.
+          </p>
+          <div class="triptych">
+            <div class="panel">
+              <img src="website/examples/boots_ref.jpg" alt="A pair of rain boots: reference view" loading="lazy">
+              <span class="panel-tag tag-ref">REFERENCE</span>
+            </div>
+            <div class="panel">
+              <img src="website/examples/boots_pos.jpg" alt="A pair of rain boots: same object, different scene" loading="lazy">
+              <span class="panel-tag tag-pos">SAME &#183; NEW SCENE</span>
+            </div>
+            <div class="panel">
+              <img src="website/examples/boots_neg.jpg" alt="A pair of rain boots: different object, same scene" loading="lazy">
+              <span class="panel-tag tag-neg">DIFFERENT &#183; SAME SCENE</span>
+            </div>
+          </div>
+          <div class="verdict">
+            <span class="score pass"><b>SigLIP2</b> &nbsp;same 0.872 &nbsp;&#183;&nbsp; different 0.786 &nbsp;&#183;&nbsp; margin +0.086 &nbsp;ranks it correctly</span>
+            <span class="score pass"><b>NearID</b> &nbsp;same 0.957 &nbsp;&#183;&nbsp; different 0.538 &nbsp;&#183;&nbsp; margin +0.419 &nbsp;ranks it correctly</span>
+          </div>
+        </div>
+      </div>
+      <div class="slide" id="slide-4">
+        <div class="slide-inner">
+          <div class="slide-kicker">Real test example 4 of 5 &#183; held-out test split</div>
+          <div class="slide-title">A sword-and-shield robot</div>
+          <p class="slide-sub">
+            The distractor is a <em>different</em> object (dark skeletal robot) inpainted into the reference's
+            own background. Reference shows white armoured robot.
+          </p>
+          <div class="triptych">
+            <div class="panel">
+              <img src="website/examples/robot_ref.jpg" alt="A sword-and-shield robot: reference view" loading="lazy">
+              <span class="panel-tag tag-ref">REFERENCE</span>
+            </div>
+            <div class="panel">
+              <img src="website/examples/robot_pos.jpg" alt="A sword-and-shield robot: same object, different scene" loading="lazy">
+              <span class="panel-tag tag-pos">SAME &#183; NEW SCENE</span>
+            </div>
+            <div class="panel">
+              <img src="website/examples/robot_neg.jpg" alt="A sword-and-shield robot: different object, same scene" loading="lazy">
+              <span class="panel-tag tag-neg">DIFFERENT &#183; SAME SCENE</span>
+            </div>
+          </div>
+          <div class="verdict">
+            <span class="score pass"><b>SigLIP2</b> &nbsp;same 0.978 &nbsp;&#183;&nbsp; different 0.835 &nbsp;&#183;&nbsp; margin +0.143 &nbsp;ranks it correctly</span>
+            <span class="score pass"><b>NearID</b> &nbsp;same 0.961 &nbsp;&#183;&nbsp; different 0.542 &nbsp;&#183;&nbsp; margin +0.419 &nbsp;ranks it correctly</span>
+          </div>
+        </div>
+      </div>
+      <div class="slide" id="slide-5">
+        <div class="slide-inner">
+          <div class="slide-kicker">Real test example 5 of 5 &#183; held-out test split</div>
+          <div class="slide-title">A canopy tent</div>
+          <p class="slide-sub">
+            The distractor is a <em>different</em> object (pyramid tent, circular logo) inpainted into the reference's
+            own background. Reference shows square tent, eagle logo.
+          </p>
+          <div class="triptych">
+            <div class="panel">
+              <img src="website/examples/tent_ref.jpg" alt="A canopy tent: reference view" loading="lazy">
+              <span class="panel-tag tag-ref">REFERENCE</span>
+            </div>
+            <div class="panel">
+              <img src="website/examples/tent_pos.jpg" alt="A canopy tent: same object, different scene" loading="lazy">
+              <span class="panel-tag tag-pos">SAME &#183; NEW SCENE</span>
+            </div>
+            <div class="panel">
+              <img src="website/examples/tent_neg.jpg" alt="A canopy tent: different object, same scene" loading="lazy">
+              <span class="panel-tag tag-neg">DIFFERENT &#183; SAME SCENE</span>
+            </div>
+          </div>
+          <div class="verdict">
+            <span class="score pass"><b>SigLIP2</b> &nbsp;same 0.917 &nbsp;&#183;&nbsp; different 0.667 &nbsp;&#183;&nbsp; margin +0.250 &nbsp;ranks it correctly</span>
+            <span class="score pass"><b>NearID</b> &nbsp;same 0.943 &nbsp;&#183;&nbsp; different 0.469 &nbsp;&#183;&nbsp; margin +0.474 &nbsp;ranks it correctly</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="carousel-nav">
+      <button class="carousel-btn" id="exPrev" aria-label="Previous example">&#8249;</button>
+      <div class="dots" id="exDots"></div>
+      <button class="carousel-btn" id="exNext" aria-label="Next example">&#8250;</button>
+    </div>
+    <p class="fig-caption">
+      <strong>The whole benchmark is this test, 500 identities wide and nine distractor generators deep.</strong>
+      Because the distractor sits in the reference's own background, a model cannot score well by
+      matching the scene &ndash; the only usable evidence is the object itself.
+      <strong>SSR</strong> is the fraction of identities where <em>every</em> such comparison comes out right.
+      Similarity values above are cosine scores from the released checkpoints on the held-out test split.
+    </p>
+  </div>
+</div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════
+     §0a3  The landscape: discrimination vs human alignment
+     ═══════════════════════════════════════════════════════════ -->
+<section id="landscape">
+<div class="container">
+  <div class="bubble-wrap"><span class="bubble"><span class="icon">&#9678;</span> Two Axes <span class="takeaway">High SSR is easy to fake &ndash; human alignment is what keeps it honest</span></span></div>
+
+  <div class="fig-card">
+    <img src="website/nearid_landscape_scatter.svg" alt="Scatter plot: NearID-bench SSR on the x-axis against DreamBench++ human alignment on the y-axis, with NearID at 99.17 / 0.545, collapsed ablations at high SSR but low alignment, and the concurrent metrics ID-Sim and TPIPS at high alignment but low SSR">
+    <p class="fig-caption">
+      <strong>Discrimination is not alignment.</strong>
+      Every point is a scoring model placed by its <strong>NearID-bench SSR</strong> (x, the test above)
+      and its <strong>DreamBench++ M&ndash;H</strong> (y) &ndash; how well its scores correlate with
+      <a href="#dreambench">human judgements</a> of personalized generations.
+      <strong>NearID</strong> <span style="color:#0369a1;font-weight:700;">(blue)</span> sits top-right at 99.17 / 0.545, above the frozen SigLIP2 baseline on both axes.
+      The <span style="color:#b45309;font-weight:600;">amber</span> band is the warning: training-objective variants that reach
+      99.6&ndash;100 SSR while human alignment falls to 0.14&ndash;0.25. A metric can win the benchmark
+      by collapsing its representation, which is why we never report SSR on its own.
+    </p>
+    <p class="fig-caption" style="border-top:1px solid #e8edf4;">
+      <strong>On the two <span style="color:#6d28d9;">purple</span> points.</strong>
+      <a href="https://arxiv.org/abs/2604.05039">ID-Sim</a> (CVPR 2026) and
+      <a href="https://arxiv.org/abs/2607.18237">TPIPS</a> (arXiv 2026) are concurrent identity and
+      perceptual-similarity metrics, <em>not</em> part of the paper. We scored them ourselves under
+      the NearID protocol after publication, and we report each at its <em>best</em> configuration:
+      ID-Sim at 53.11 SSR (best of 15 backbone &times; scoring-mode combinations) and TPIPS at
+      34.89 SSR (best of 14 text factors). Both reproduce their own published numbers in our hands,
+      so this is a difference in objective, not an integration failure.
+      They lead us on human alignment and trail us on matched-context discrimination &ndash; the
+      ordering on the two axes is reversed, which is the same point the amber band makes from the
+      other direction.
     </p>
   </div>
 </div>
@@ -659,42 +1030,6 @@ footer {
 
 
 <!-- ═══════════════════════════════════════════════════════════
-     §6b  The landscape: discrimination vs human alignment
-     ═══════════════════════════════════════════════════════════ -->
-<section id="landscape">
-<div class="container">
-  <div class="bubble-wrap"><span class="bubble"><span class="icon">&#9678;</span> Two Axes <span class="takeaway">High SSR is easy to fake &ndash; human alignment is what keeps it honest</span></span></div>
-
-  <div class="fig-card">
-    <img src="website/nearid_landscape_scatter.svg" alt="Scatter plot: NearID-bench SSR on the x-axis against DreamBench++ human alignment on the y-axis, with NearID at 99.17 / 0.545, collapsed ablations at high SSR but low alignment, and the concurrent metrics ID-Sim and TPIPS at high alignment but low SSR">
-    <p class="fig-caption">
-      <strong>Discrimination is not alignment.</strong>
-      Every point is a scoring model placed by its <strong>NearID-bench SSR</strong> (x) and its
-      <strong>DreamBench++ M&ndash;H</strong> on the object category (y).
-      <strong>NearID</strong> <span style="color:#0369a1;font-weight:700;">(blue)</span> sits top-right at 99.17 / 0.545, above the frozen SigLIP2 baseline on both axes.
-      The <span style="color:#b45309;font-weight:600;">amber</span> band is the warning: training-objective variants that reach
-      99.6&ndash;100 SSR while human alignment falls to 0.14&ndash;0.25. A metric can win the benchmark
-      by collapsing its representation, which is why we never report SSR on its own.
-    </p>
-    <p class="fig-caption" style="border-top:1px solid #e8edf4;">
-      <strong>On the two <span style="color:#6d28d9;">purple</span> points.</strong>
-      <a href="https://arxiv.org/abs/2604.05039">ID-Sim</a> (CVPR 2026) and
-      <a href="https://arxiv.org/abs/2607.18237">TPIPS</a> (arXiv 2026) are concurrent identity and
-      perceptual-similarity metrics, <em>not</em> part of the paper. We scored them ourselves under
-      the NearID protocol after publication, and we report each at its <em>best</em> configuration:
-      ID-Sim at 53.11 SSR (best of 15 backbone &times; scoring-mode combinations) and TPIPS at
-      34.89 SSR (best of 14 text factors). Both reproduce their own published numbers in our hands,
-      so this is a difference in objective, not an integration failure.
-      They lead us on human alignment and trail us on matched-context discrimination &ndash; the
-      ordering on the two axes is reversed, which is the same point the amber band makes from the
-      other direction.
-    </p>
-  </div>
-</div>
-</section>
-
-
-<!-- ═══════════════════════════════════════════════════════════
      §7  MTG Score Distributions
      ═══════════════════════════════════════════════════════════ -->
 <section id="distributions">
@@ -722,5 +1057,125 @@ footer {
   KAUST &amp; Snap Research
 </footer>
 
+<script>
+/* Examples carousel. Swiping works with no JS at all (CSS scroll-snap);
+   this only wires up the arrows and the dots. */
+(function () {
+  var car = document.getElementById('exCarousel');
+  if (!car) return;
+  var slides = Array.prototype.slice.call(car.querySelectorAll('.slide'));
+  var dots = document.getElementById('exDots');
+  var prev = document.getElementById('exPrev');
+  var next = document.getElementById('exNext');
+  var current = 0;
+
+  slides.forEach(function (_, i) {
+    var b = document.createElement('button');
+    b.className = 'dot';
+    b.type = 'button';
+    b.setAttribute('aria-label', 'Go to example ' + (i + 1));
+    b.addEventListener('click', function () { go(i); });
+    dots.appendChild(b);
+  });
+
+  function paint() {
+    Array.prototype.forEach.call(dots.children, function (d, i) {
+      d.setAttribute('aria-current', i === current ? 'true' : 'false');
+    });
+    prev.disabled = current === 0;
+    next.disabled = current === slides.length - 1;
+  }
+  function go(i) {
+    current = Math.max(0, Math.min(slides.length - 1, i));
+    car.scrollTo({ left: slides[current].offsetLeft - car.offsetLeft, behavior: 'smooth' });
+    paint();
+  }
+  prev.addEventListener('click', function () { go(current - 1); });
+  next.addEventListener('click', function () { go(current + 1); });
+  car.addEventListener('keydown', function (e) {
+    if (e.key === 'ArrowRight') { e.preventDefault(); go(current + 1); }
+    if (e.key === 'ArrowLeft')  { e.preventDefault(); go(current - 1); }
+  });
+
+  /* Keep the dots honest when the user swipes instead of clicking. */
+  var tick;
+  car.addEventListener('scroll', function () {
+    clearTimeout(tick);
+    tick = setTimeout(function () {
+      var mid = car.scrollLeft + car.clientWidth / 2, best = 0, bestD = Infinity;
+      slides.forEach(function (sl, i) {
+        var c = sl.offsetLeft - car.offsetLeft + sl.clientWidth / 2;
+        var d = Math.abs(c - mid);
+        if (d < bestD) { bestD = d; best = i; }
+      });
+      if (best !== current) { current = best; }
+      paint();
+    }, 90);
+  }, { passive: true });
+
+  paint();
+})();
+</script>
+<script>
+/* Tap-to-enlarge for every figure and example panel, mobile included.
+   Pinch still works natively; tapping the image toggles a fixed 2.3x. */
+(function () {
+  var imgs = document.querySelectorAll('.fig-card > img, .panel img, .fig-card .tab-content img');
+  if (!imgs.length) return;
+
+  var box = document.createElement('div');
+  box.className = 'lightbox';
+  box.setAttribute('role', 'dialog');
+  box.setAttribute('aria-modal', 'true');
+  var big = document.createElement('img');
+  var cap = document.createElement('div');
+  cap.className = 'lightbox-cap';
+  var close = document.createElement('button');
+  close.className = 'lightbox-close';
+  close.type = 'button';
+  close.setAttribute('aria-label', 'Close');
+  close.innerHTML = '&times;';
+  box.appendChild(big); box.appendChild(cap); box.appendChild(close);
+  document.body.appendChild(box);
+
+  var prevOverflow = '';
+  function open(src, alt) {
+    big.classList.remove('zoomed');
+    big.src = src;
+    big.alt = alt || '';
+    cap.textContent = alt || '';
+    cap.style.display = alt ? 'block' : 'none';
+    box.classList.add('open');
+    prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    close.focus();
+  }
+  function shut() {
+    box.classList.remove('open');
+    big.classList.remove('zoomed');
+    big.removeAttribute('src');
+    document.body.style.overflow = prevOverflow;
+  }
+
+  Array.prototype.forEach.call(imgs, function (im) {
+    im.classList.add('zoomable');
+    im.addEventListener('click', function () { open(im.currentSrc || im.src, im.alt); });
+  });
+
+  big.addEventListener('click', function (e) {
+    e.stopPropagation();
+    big.classList.toggle('zoomed');
+    if (big.classList.contains('zoomed')) {
+      box.scrollLeft = (box.scrollWidth - box.clientWidth) / 2;
+      box.scrollTop = (box.scrollHeight - box.clientHeight) / 2;
+    }
+  });
+  close.addEventListener('click', shut);
+  box.addEventListener('click', function (e) { if (e.target === box) shut(); });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && box.classList.contains('open')) shut();
+  });
+})();
+</script>
 </body>
 </html>
