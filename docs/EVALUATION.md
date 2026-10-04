@@ -78,6 +78,12 @@ This generates LaTeX tables and CSVs under `outputs/tables/`.
 | **SSR** | `SSRm` | Success Separation Rate (AND-based: all pairwise margins must win) |
 | **PA** | `PA` | Pairwise Accuracy (win rate across all margin trials) |
 
+> **Note on PA:** the reported PA pools the per-sample aggregate `*_overall_win` term alongside the
+> individual pairwise margin terms, so it is slightly higher than a strictly pairwise win rate
+> (typically by under 1 point, up to ~4 points for VLM scorers, with no change to model ordering);
+> SSR is unaffected, and passing `overall_margin_col` to `summarize_margin_family` yields the
+> strict variant.
+
 ### MTG Metrics
 
 | Metric | Symbol | Description |

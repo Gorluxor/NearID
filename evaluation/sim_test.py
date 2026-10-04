@@ -574,6 +574,9 @@ class VSMCalculator:
 # Qwen3-VL Judge Calculator (VLM-based pairwise scoring)
 # -----------------------------------------------------------------------------
 
+# Prompt used for all reported Qwen3-VL results; resolved next to this file so it works from any cwd.
+DEFAULT_VL_TEMPLATE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "vl_template_v2.txt")
+
 class Qwen3VLJudgeCalculator:
     """
     Qwen3-VL judge: (imgA, imgB) + template prompt -> JSON with {"score": <number>, ...}
@@ -582,7 +585,7 @@ class Qwen3VLJudgeCalculator:
     def __init__(
         self,
         model_id: str = "Qwen/Qwen3-VL-4B-Instruct",
-        template_path: str = "vl_template_v2.txt", # Note(Alex): Important V2 as says to be concise
+        template_path: str = DEFAULT_VL_TEMPLATE, # Note(Alex): Important V2 as says to be concise
         device_map: str = "auto",
         dtype: str = "auto",
         max_new_tokens: int = 128,  # WARNING: 128 may truncate MTG JSON output (~262 tokens). Use >=512 for MTG mode.
@@ -1873,7 +1876,7 @@ if __name__ == "__main__":
         default=None,
         help="Force VLM mode (True/False). If not specified, auto-detected from model name.",
     )
-    parser.add_argument("--vl_template", type=str, default="vl_template_v2.txt") 
+    parser.add_argument("--vl_template", type=str, default=DEFAULT_VL_TEMPLATE)
     parser.add_argument("--max_new_tokens", type=int, default=128,
                         help="Max tokens for VLM generation. WARNING: MTG JSON output is ~262 tokens; "
                              "use >=512 for MTG mode. 30B auto-overrides to 512, but 4B/8B do not.")
